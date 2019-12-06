@@ -17,180 +17,149 @@
 using namespace std;
 
 //============================================================================== POINT
-struct Vector {
+struct Point {
     float x,y,z;
-    Vector(double x1, double y1, double z1) {
+    Point(float x1, float y1, float z1) {
         x = x1; y = y1; z = z1;
     }
-    Vector(void) {
+    Point(void) {
         x = 0; y = 0; z = 0;
     }
-    inline Vector operator + (const Vector& v1)const {
-        return Vector(x+v1.x, y+v1.y, z+v1.z);
+    inline Point operator + (const Point& v1)const {
+        return Point(x+v1.x, y+v1.y, z+v1.z);
     }
-    inline Vector operator - (void)const {
-        return Vector(-x, -y, -z);
+    inline Point operator - (void)const {
+        return Point(-x, -y, -z);
     }
-    inline Vector operator - (const Vector& v1)const {
-        return Vector(x-v1.x, y-v1.y, z-v1.z);
+    inline Point operator - (const Point& v1)const {
+        return Point(x-v1.x, y-v1.y, z-v1.z);
     }
-    inline double operator * (const Vector& v1)const{
-        return x * v1.x + y * v1.y + z * v1.z;
+    inline double operator * (const Point& v1)const{
+        return x*v1.x + y*v1.y + z*v1.z;
     }
-    inline Vector operator * (const float f)const{
-        return Vector(x * f, y * f, z * f);
+    inline Point operator * (const float f)const{
+        return Point(x*f, y*f, z*f);
     }
-    inline Vector operator / (const float f)const{
-        return Vector(x / f, y / f, z / f);
+    inline Point operator / (const float f)const{
+        return Point(x/f, y/f, z/f);
     }
-    inline Vector &operator += (const Vector& v1) {
+    inline Point &operator += (const Point& v1) {
         x += v1.x; y += v1.y; z += v1.z;
         return *this;
     }
-    inline Vector &operator -= (const Vector& v1) {
+    inline Point &operator -= (const Point& v1) {
         x -= v1.x; y -= v1.y; z -= v1.z;
         return *this;
     }
-    inline Vector &operator *= (float f) {
+    inline Point &operator *= (float f) {
         x *= f; y *= f; z *= f;
         return *this;
     }
-    inline Vector &operator /= (float f) {
+    inline Point &operator /= (float f) {
         x /= f; y /= f; z /= f;
         return *this;
     }
     inline float length(void)const {
         return sqrt(x*x + y*y + z*z);
     }
-    inline Vector& norm(void) {
+    inline Point& norm(void) {
         float length = sqrt(x*x + y*y + z*z);
         x /= length; y /= length; z /= length;
         return *this;
     }
 };
 
-Vector cross(const Vector& v1, const Vector& v2) {
-    return Vector(v1.y*v2.z - v1.z*v2.y,v1.z*v2.x - v1.x*v2.z,v1.x*v2.y - v1.y*v2.x);
+Point cross(const Point& v1, const Point& v2) {
+    return Point(v1.y*v2.z - v1.z*v2.y,v1.z*v2.x - v1.x*v2.z,v1.x*v2.y - v1.y*v2.x);
 }
 
-float dot(const Vector& v1, const Vector& v2) {
+float dot(const Point& v1, const Point& v2) {
     return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
 }
 
-istream& operator>>(istream& in, Vector& p) {
+istream& operator>>(istream& in, Point& p) {
     in >> p.x >> p.y >> p.z;
     return in;
 }
 
-ostream& operator<<(ostream& out, const Vector& p) {
+ostream& operator<<(ostream& out, const Point& p) {
     out << p.x << ' ' << p.y << ' ' << p.z;
     return out;
 }
     
 //============================================================================== COLOR
 
-class Color3f {
+class Color {
 public:
-    float r, g, b;
-    Color3f():r(0.0), g(0.0), b(0.0){}
-    Color3f(float vr, float vg, float vb):r(vr),g(vg), b(vb){}
-    Color3f& operator+=(const Color3f& rhs);
-    Color3f& operator-=(const Color3f& rhs);
-    Color3f& operator*=(const Vector& rhs);
-    Color3f& operator*=(float a);
-    Color3f& operator/=(float a);
+    float r,g,b;
+    Color(float r1, float g1, float b1) {
+        r = r1; g = g1; b = b1;
+    }
+    Color(void) {
+        r = 0; g = 0; b = 0;
+    }
+    inline Color operator + (const Color& v1)const {
+        return Color(r+v1.r, g+v1.g, b+v1.b);
+    }
+    inline Color operator - (const Color& v1)const {
+        return Color(r-v1.r, g-v1.g, b-v1.b);
+    }
+    inline Color operator * (const Point& v1)const {
+        return Color(r-v1.x, g-v1.y, b-v1.z);
+    }
+    inline Color operator * (const float f)const {
+        return Color(r*f, g*f, b*f);
+    }
+    inline Color operator / (const float f)const {
+        return Color(r/f, g/f, b/f);
+    }
+    inline Color &operator += (const Color& v1) {
+        r += v1.r; g += v1.g; b += v1.b;
+        return *this;
+    }
+    inline Color &operator -= (const Color& v1) {
+        r -= v1.r; g -= v1.g; b -= v1.b;
+        return *this;
+    }
+    inline Color &operator *= (const Point& v1) {
+        r *= v1.x; g *= v1.y; b *= v1.z;
+        return *this;
+    }
+    inline Color &operator *= (float f) {
+        r *= f; g *= f; b *= f;
+        return *this;
+    }
+    inline Color &operator /= (float f) {
+        r /= f; g /= f; b /= f;
+        return *this;
+    }
 };
-    
-Color3f& Color3f::operator+=(const Color3f& rhs) {
-    r += rhs.r;
-    g += rhs.g;
-    b += rhs.b;
-    return *this;
-}
 
-Color3f& Color3f::operator-=(const Color3f& rhs) {
-    r -= rhs.r;
-    g -= rhs.g;
-    b -= rhs.b;
-    return *this;
-}
-
-Color3f& Color3f::operator*=(const Vector& rhs) {
-    r *= rhs.x;
-    g *= rhs.y;
-    b *= rhs.z;
-    return *this;
-}
-
-Color3f& Color3f::operator*=(float a) {
-    r *= a;
-    g *= a;
-    b *= a;
-    return *this;
-}
-
-Color3f& Color3f::operator/=(float a) {
-    r /= a;
-    g /= a;
-    b /= a;
-    return *this;
-}
-
-Color3f operator+(const Color3f& l, const Color3f& rhs) {
-    Color3f ret = l;
-    ret += rhs;
-    return ret;
-}
-
-Color3f operator-(const Color3f& l, const Color3f& rhs) {
-    Color3f ret = l;
-    ret -= rhs;
-    return ret;
-}
-
-Color3f operator*(const Color3f& l, const Vector& r) {
-    Color3f ret = l;
-    ret *= r;
-    return ret;
-}
-
-Color3f operator*(const Color3f& l, float a) {
-    Color3f ret = l;
-    ret *= a;
-    return ret;
-}
-
-Color3f operator/(const Color3f& l, float a){
-    Color3f ret = l;
-    ret /= a;
-    return ret;
-}
-
-istream& operator>>(istream& in, Color3f& p) {
+istream& operator>>(istream& in, Color& p) {
     in >> p.r >> p.g >> p.b;
     return in;
 }
-ostream& operator<<(ostream& out, const Color3f& p) {
+ostream& operator<<(ostream& out, const Color& p) {
     out << p.r << ' ' << p.g << ' ' << p.b;
     return out;
 }
 
 //============================================================================== OBJECT
 float iA = 0.2, iL = 1;
-Vector kA(1, 1, 1), kD(1, 1, 1), kS(1, 1, 1);
+Point kA(1, 1, 1), kD(1, 1, 1), kS(1, 1, 1);
 int bigN = 5;
 float bigK = 10;
 float kR = 0.5, kT = 0.5;
 float eta = 1.5;
-Vector lightSource(0, 1, 0);
+Point lightSource(0, 1, 0);
 
 class Line {
 public:
-    Vector start;
-    Vector u;
+    Point start;
+    Point u;
     bool inside;
 public:
-    Line(const Vector& start_, const Vector& u_, bool inside_):
+    Line(const Point& start_, const Point& u_, bool inside_):
         start(start_), u(u_), inside(inside_){}
     Line():inside(false){}
 };
@@ -198,39 +167,39 @@ public:
 class Primitive {
 public:
     bool transparent;
-    Color3f color;
+    Color color;
 public:
-    virtual bool intersect(const Line& l, Vector& result) = 0;
-    virtual Vector normal(const Vector& p) = 0;
+    virtual bool intersect(const Line& l, Point& result) = 0;
+    virtual Point normal(const Point& p) = 0;
 };
 
 class Polygon : public Primitive {
 public:
-    vector<Vector> v;
-    Vector n;
+    vector<Point> v;
+    Point n;
 public:
-    bool intersect(const Line& l, Vector& result);
-    Vector normal(const Vector& p);
+    bool intersect(const Line& l, Point& result);
+    Point normal(const Point& p);
 };
 
 class Sphere : public Primitive {
 public:
-    Vector center;
+    Point center;
     float radius;
 public:
-    bool intersect(const Line& l, Vector& result);
-    Vector normal(const Vector& p);
+    bool intersect(const Line& l, Point& result);
+    Point normal(const Point& p);
 };
 
 class Quadratic : public Primitive {
 public:
     float A, B, C, D, E, F, G, H, I, J;
 public:
-    bool intersect(const Line& l, Vector& result);
-    Vector normal(const Vector& p);
+    bool intersect(const Line& l, Point& result);
+    Point normal(const Point& p);
 };
 
-inline void makePixel(int x, int y, const Color3f& c, GLfloat *pixels, int resolution) {
+inline void makePixel(int x, int y, const Color& c, GLfloat *pixels, int resolution) {
     if (0 <= x && x < resolution && 0 <= y && y < resolution) {
         pixels[(y * resolution + x) * 3] = c.r;
         pixels[(y * resolution + x) * 3 + 1] = c.g;
@@ -249,7 +218,7 @@ inline void normalize(GLfloat *pixels, int resolution) {
     }
 }
 
-bool Polygon::intersect(const Line& l, Vector& result) {
+bool Polygon::intersect(const Line& l, Point& result) {
     float D = -dot(n, v[0]);
     float s = -(D+dot(n, l.start)) / dot(n, l.u);
     bool ret = POS(s);
@@ -260,19 +229,19 @@ bool Polygon::intersect(const Line& l, Vector& result) {
     return ret;
 }
 
-Vector Polygon::normal(const Vector& p) {
+Point Polygon::normal(const Point& p) {
     return n;
 }
 
-bool Sphere::intersect(const Line& l, Vector& result) {
-    Vector diff = center - l.start;
+bool Sphere::intersect(const Line& l, Point& result) {
+    Point diff = center - l.start;
     float base = dot(l.u, diff);
     float delta = base * base - dot(diff, diff) + radius * radius;
     if (delta < 0)
         return false;
     delta = sqrt(delta);
-    Vector p1 = l.start + l.u * (base - delta);
-    Vector p2 = l.start + l.u * (base + delta);
+    Point p1 = l.start + l.u * (base - delta);
+    Point p2 = l.start + l.u * (base + delta);
     bool v1 = POS((p1 - l.start).length()) && POS(base - delta);
     bool v2 = POS((p2 - l.start).length()) && POS(base + delta);
     if (v1 && v2)
@@ -285,12 +254,12 @@ bool Sphere::intersect(const Line& l, Vector& result) {
     return true;
 }
 
-Vector Sphere::normal(const Vector& p) {
-    Vector ret = (p - center).norm();
+Point Sphere::normal(const Point& p) {
+    Point ret = (p - center).norm();
     return ret;
 }
 
-bool Quadratic::intersect(const Line& l, Vector& result) {
+bool Quadratic::intersect(const Line& l, Point& result) {
     float Aq = A * l.u.x * l.u.x + B * l.u.y * l.u.y + C * l.u.z * l.u.z
                 + D * l.u.x * l.u.y + E * l.u.x * l.u.z + F * l.u.y * l.u.z;
     float Bq = 2*A * l.start.x * l.u.x + 2*B * l.start.y * l.u.y + 2*C * l.start.z * l.u.z
@@ -305,7 +274,7 @@ bool Quadratic::intersect(const Line& l, Vector& result) {
     if (delta < 0)
         return false;
     delta = sqrt(delta);
-    Vector p1, p2;
+    Point p1, p2;
     if (Aq == 0)
         p1 = p2 = l.start + l.u * (-Cq / Bq);
     else {
@@ -324,8 +293,8 @@ bool Quadratic::intersect(const Line& l, Vector& result) {
     return true;
 }
 
-Vector Quadratic::normal(const Vector& p) {
-    Vector ret;
+Point Quadratic::normal(const Point& p) {
+    Point ret;
     ret.x = 2*A*p.x + D*p.y + E*p.z + G;
     ret.y = 2*B*p.y + D*p.x + F*p.z + H;
     ret.z = 2*C*p.z + E*p.x + F*p.y + I;
@@ -333,7 +302,7 @@ Vector Quadratic::normal(const Vector& p) {
     return ret;
 }
 
-Polygon* newTriangle(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& normal) {
+Polygon* newTriangle(const Point& v1, const Point& v2, const Point& v3, const Point& normal) {
     Polygon* ret = new Polygon();
     ret->v.push_back(v1);
     ret->v.push_back(v2);
@@ -342,7 +311,7 @@ Polygon* newTriangle(const Vector& v1, const Vector& v2, const Vector& v3, const
     return ret;
 }
 
-Polygon* newSquare(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& v4, const Vector& normal) {
+Polygon* newSquare(const Point& v1, const Point& v2, const Point& v3, const Point& v4, const Point& normal) {
     Polygon* ret = new Polygon();
     ret->v.push_back(v1);
     ret->v.push_back(v2);
@@ -352,7 +321,7 @@ Polygon* newSquare(const Vector& v1, const Vector& v2, const Vector& v3, const V
     return ret;
 }
 
-Quadratic* newSphere(const Vector& center, float radius) {
+Quadratic* newSphere(const Point& center, float radius) {
     Quadratic* ret = new Quadratic();
     ret->A = ret->B = ret->C = 1;
     ret->D = ret->E = ret->F = 0;
@@ -363,7 +332,7 @@ Quadratic* newSphere(const Vector& center, float radius) {
     return ret;
 }
 
-Quadratic* newEllipsoid(const Vector& center, float a, float b, float c) {
+Quadratic* newEllipsoid(const Point& center, float a, float b, float c) {
     Quadratic* ret = new Quadratic();
     ret->A = b * b + c * c;
     ret->B = a * a + c * c;
@@ -379,19 +348,19 @@ Quadratic* newEllipsoid(const Vector& center, float a, float b, float c) {
     return ret;
 }
 
-Vector refract(const Line& l, const Vector& normal) {
+Point refract(const Line& l, const Point& normal) {
     float r = l.inside ? eta : 1 / eta;
     float cosThetaI = dot(-l.u, normal);
     float cosThetaR = sqrt(1 - (r * r) * (1 - cosThetaI * cosThetaI));
     return l.u * r - normal * (cosThetaR - r * cosThetaI);
 }
 
-Vector reflect(const Vector& u, const Vector& normal) {
+Point reflect(const Point& u, const Point& normal) {
     return u - normal * 2 * dot(normal, u);
 }
     
-bool intersect(const Line& line, const vector<Primitive*>& primitives, Vector& result, int& resultId) {
-    Vector best, now;
+bool intersect(const Line& line, const vector<Primitive*>& primitives, Point& result, int& resultId) {
+    Point best, now;
     int bestId;
     float bestDist = 0, nowDist;
     bool ret = false;
@@ -413,50 +382,50 @@ bool intersect(const Line& line, const vector<Primitive*>& primitives, Vector& r
     return ret;
 }
 
-Vector phong(const Vector& point, const Vector& ref, const Vector& normal, const vector<Primitive*>& primitives) {
-    Vector intensity = kA * iA;
-    Vector l = (lightSource - point).norm();
-    Vector v = (ref - point).norm();
-    Vector r = (normal * 2.0 * dot(normal, l) - l).norm();
-    Vector diff;
+Point phong(const Point& point, const Point& ref, const Point& normal, const vector<Primitive*>& primitives) {
+    Point intensity = kA * iA;
+    Point l = (lightSource - point).norm();
+    Point v = (ref - point).norm();
+    Point r = (normal * 2.0 * dot(normal, l) - l).norm();
+    Point diff;
     Line line; line.start = point; line.u = (lightSource - point).norm();
-    Vector result;
+    Point result;
     int resultId;
     if (intersect(line, primitives, result, resultId))
         return intensity;
     float productDiff = dot(l, normal);
     if (productDiff > 0) diff = kD * productDiff;
-    Vector spec;
+    Point spec;
     float productSpec = dot(r, v);
     if (productDiff > 0 && productSpec > 0) spec = kS * productSpec;
     intensity += (diff + spec) * iL / ((ref - point).length() + bigK);
     return intensity;
 }
 
-Color3f light(const Line& line, const vector<Primitive*>& primitives, int depth) {
-    Color3f ret;
+Color light(const Line& line, const vector<Primitive*>& primitives, int depth) {
+    Color ret;
     Primitive* prim;
     int id;
-    Vector point;
-    Vector normal;
+    Point point;
+    Point normal;
     if (depth == 0) return ret;
     if (intersect(line, primitives, point, id)) {
         prim = primitives[id];
         normal = prim->normal(point);
-        Vector ph = phong(point, line.start, normal, primitives);
+        Point ph = phong(point, line.start, normal, primitives);
         ret = prim->color * ph;
         Line refl;
         refl.start = point;
         refl.u = reflect(line.u, normal).norm();
         refl.inside = line.inside;
-        Color3f rf = light(refl, primitives, depth - 1);
+        Color rf = light(refl, primitives, depth - 1);
         ret += rf * kR;
         if (prim->transparent) {
             Line refr;
             refr.start = point;
             refr.u = refract(line, normal).norm();
             refr.inside = !line.inside;
-            Color3f rt = light(refr, primitives, depth - 1);
+            Color rt = light(refr, primitives, depth - 1);
             ret += rt * kT;
         }
     }
@@ -471,10 +440,10 @@ float canvas[WINDOW_SIZE * WINDOW_SIZE * 3];
 
 vector<Primitive*> objects;
 
-Vector from(0, -3, 0);
-Vector at(0, 0, 0);
-Vector up(0, 0, 1);
-Vector rv;
+Point from(0, -3, 0);
+Point at(0, 0, 0);
+Point up(0, 0, 1);
+Point rv;
 float angDeg = 45;
 int resolution = WINDOW_SIZE;
 int depth = 5;
@@ -484,7 +453,7 @@ Line ray(int x, int y) {
     ret.start = from;
     float xx = (float)x/(float)resolution*2 - 1;
     float yy = (float)y/(float)resolution*2 - 1;
-    Vector p = from;
+    Point p = from;
     p += rv * tan(angDeg / 180 * PI) * xx;
     p += up * tan(angDeg / 180 * PI) * yy;
     p += (at - from).norm();
@@ -492,7 +461,7 @@ Line ray(int x, int y) {
     return ret;
 }
 
-void updateVector() {
+void updatePoint() {
     up.norm();
     rv = cross(at - from, up).norm();
 }
@@ -501,17 +470,13 @@ void initWindow() {
     glClearColor(0, 0, 0, 0);
 }
 
-void call() {
-    1;
-}
-
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     memset(canvas, 0.0f, sizeof(canvas));
     for (int x = 0; x < resolution; x++)
         for (int y = 0; y < resolution; y++) {
             Line r = ray(x, y);
-            Color3f f = light(r, objects, depth);
+            Color f = light(r, objects, depth);
             makePixel(x, y, f, canvas, resolution);
         }
     normalize(canvas, resolution);
@@ -566,13 +531,9 @@ void set() {
     cout << ">";
     getline(cin, command);
     set(command);
-    updateVector();
+    updatePoint();
     cout << "OK!" << endl;
     refreshFunc();
-}
-
-
-void exitFunc() {
 }
 
 void init(int argc, char** argv) {
@@ -582,58 +543,58 @@ void init(int argc, char** argv) {
     glutInitWindowSize(600, 600);
     glutInitWindowPosition(100, 100);
 
-    Quadratic* org = newSphere(Vector(0, 0, 0), 0.1);
-    org->color = Color3f(1, 1, 1);
+    Quadratic* org = newSphere(Point(0, 0, 0), 0.1);
+    org->color = Color(1, 1, 1);
     org->transparent = true;
-    Quadratic* s = newSphere(Vector(-0.5, 1, -0.5), 0.4);
-    s->color = Color3f(1, 1, 1);
+    Quadratic* s = newSphere(Point(-0.5, 1, -0.5), 0.4);
+    s->color = Color(1, 1, 1);
     s->transparent = false;
-    Quadratic* s2 = newSphere(Vector(1, 1.5, 1), 0.6);
-    s2->color = Color3f(1, 1, 1);
+    Quadratic* s2 = newSphere(Point(1, 1.5, 1), 0.6);
+    s2->color = Color(1, 1, 1);
     s2->transparent = true;
-    Polygon* t = newTriangle(Vector(-1, 2, 2),
-                             Vector(-1, 2, 1),
-                             Vector(-1, 1, 2),
-                             Vector(-1, 0, 0));
-    t->color = Color3f(1, 1, 1);
+    Polygon* t = newTriangle(Point(-1, 2, 2),
+                             Point(-1, 2, 1),
+                             Point(-1, 1, 2),
+                             Point(-1, 0, 0));
+    t->color = Color(1, 1, 1);
     t->transparent = true;
-    Polygon* t2 = newTriangle(Vector(0, 2, 2),
-                              Vector(-1, 2, 1),
-                              Vector(-1, 2, 2),
-                              Vector(0, 1, 0));
-    t2->color = Color3f(1, 1, 1);
+    Polygon* t2 = newTriangle(Point(0, 2, 2),
+                              Point(-1, 2, 1),
+                              Point(-1, 2, 2),
+                              Point(0, 1, 0));
+    t2->color = Color(1, 1, 1);
     t2->transparent = true;
-    Polygon* t3 = newTriangle(Vector(-1, 2, 2),
-                              Vector(-1, 1, 2),
-                              Vector(0, 2, 2),
-                              Vector(0, 0, 1));
-    t3->color = Color3f(1, 1, 1);
+    Polygon* t3 = newTriangle(Point(-1, 2, 2),
+                              Point(-1, 1, 2),
+                              Point(0, 2, 2),
+                              Point(0, 0, 1));
+    t3->color = Color(1, 1, 1);
     t3->transparent = true;
-    Polygon* t4 = newTriangle(Vector(0, 2, 2),
-                              Vector(-1, 1, 2),
-                              Vector(-1, 2, 1),
-                              Vector(1, -1, -1));
-    t4->color = Color3f(1, 1, 1);
+    Polygon* t4 = newTriangle(Point(0, 2, 2),
+                              Point(-1, 1, 2),
+                              Point(-1, 2, 1),
+                              Point(1, -1, -1));
+    t4->color = Color(1, 1, 1);
     t4->transparent = true;
-    Polygon* p = newSquare(Vector(5, 6, -4), Vector(5, 6, 4),
-                           Vector(-5, 6, 4), Vector(-5, 6, -4),
-                           Vector(0, -1, 0));
-    p->color = Color3f(1, 0.85, 0.25);
+    Polygon* p = newSquare(Point(5, 6, -4), Point(5, 6, 4),
+                           Point(-5, 6, 4), Point(-5, 6, -4),
+                           Point(0, -1, 0));
+    p->color = Color(1, 0.85, 0.25);
     p->transparent = false;
-    Polygon* p2 = newSquare(Vector(-5, -6, -4), Vector(-5, 6, -4),
-                           Vector(-5, 6, 4), Vector(-5, -6, 4),
-                           Vector(1, 0, 0));
-    p2->color = Color3f(0, 0.5, 1);
+    Polygon* p2 = newSquare(Point(-5, -6, -4), Point(-5, 6, -4),
+                           Point(-5, 6, 4), Point(-5, -6, 4),
+                           Point(1, 0, 0));
+    p2->color = Color(0, 0.5, 1);
     p2->transparent = false;
-    Polygon* p3 = newSquare(Vector(5, 6, -4), Vector(5, -6, -4),
-                           Vector(5, -6, 4), Vector(5, 6, 4),
-                           Vector(-1, 0, 0));
-    p3->color = Color3f(1, 0.2, 0);
+    Polygon* p3 = newSquare(Point(5, 6, -4), Point(5, -6, -4),
+                           Point(5, -6, 4), Point(5, 6, 4),
+                           Point(-1, 0, 0));
+    p3->color = Color(1, 0.2, 0);
     p3->transparent = false;
-    Polygon* p4 = newSquare(Vector(5, 6, 4), Vector(5, -6, 4),
-                           Vector(-5, -6, 4), Vector(-5, 6, 4),
-                           Vector(0, 0, -1));
-    p4->color = Color3f(0.5, 1, 0);
+    Polygon* p4 = newSquare(Point(5, 6, 4), Point(5, -6, 4),
+                           Point(-5, -6, 4), Point(-5, 6, 4),
+                           Point(0, 0, -1));
+    p4->color = Color(0.5, 1, 0);
     p4->transparent = false;
     objects.push_back(org);
     objects.push_back(s);
@@ -646,7 +607,7 @@ void init(int argc, char** argv) {
 //    objects.push_back(p2);
 //    objects.push_back(p3);
 //    objects.push_back(p4);
-    updateVector();
+    updatePoint();
 }
 
 void keyFunc(unsigned char ch, int x, int y) {
@@ -662,8 +623,6 @@ int main(int argc, char** argv) {
     initWindow();
     glutDisplayFunc(display);
     glutKeyboardFunc(keyFunc);
-    atexit(exitFunc);
     glutMainLoop();
     return 0;
 }
-
