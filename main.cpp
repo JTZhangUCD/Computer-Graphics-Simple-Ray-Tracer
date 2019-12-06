@@ -269,23 +269,35 @@ public:
     }
 };
 
-inline void makePixel(int x, int y, const Color& c, GLfloat *pixels, int resolution) {
-    if (0 <= x && x < resolution && 0 <= y && y < resolution) {
-        pixels[(y * resolution + x) * 3] = c.r;
-        pixels[(y * resolution + x) * 3 + 1] = c.g;
-        pixels[(y * resolution + x) * 3 + 2] = c.b;
-    }
+vector<Primitive*> objects; //=================================================================== global
+int window;
+
+float buffer[WINDOW_SIZE * WINDOW_SIZE * 3];
+//vector<Color> pixelBuffer;
+    
+Vector from(0, -3, 0);
+Vector at(0, 0, 0);
+Vector up(0, 0, 1);
+Vector rv;
+float angDeg = 45;
+int resolution = WINDOW_SIZE;
+int depth = 5;
+
+inline void makePixel(int x, int y, const Color& c) {
+    buffer[(y * resolution + x) * 3] = c.r;
+    buffer[(y * resolution + x) * 3 + 1] = c.g;
+    buffer[(y * resolution + x) * 3 + 2] = c.b;
 }
-inline void normalize(GLfloat *pixels, int resolution) {
+inline void normalize(void) {
     // best: 最亮的点
     GLfloat best = 0.0;
     for (int i = 0; i < resolution * resolution * 3; i++) {
-        if (pixels[i] > best)
-            best = pixels[i];
+        if (buffer[i] > best)
+            best = buffer[i];
     }
     if (best > 0.0) {
         for (int i = 0; i < resolution * resolution * 3; i++)
-            pixels[i] /= best;
+            buffer[i] /= best;
     }
 }
 
@@ -346,13 +358,13 @@ Vector reflect(const Vector& u, const Vector& normal) {
     return u - normal * 2 * dot(normal, u);
 }
     
-bool intersect(const Line& line, const vector<Primitive*>& primitives, Vector& result, int& resultId) {
+bool intersect(const Line& line, Vector& result, int& resultId) {
     Vector best, now;
     int bestId;
     float bestDist = 0, nowDist;
     bool ret = false;
-    for (int i = 0; i < primitives.size(); i++) {
-        if (primitives[i]->intersect(line, now)) {
+    for (int i = 0; i < objects.size(); i++) {
+        if (objects[i]->intersect(line, now)) {
             nowDist = (now - line.start).length();
             if (!ret || (nowDist < bestDist)) {
                 ret = true;
@@ -369,7 +381,7 @@ bool intersect(const Line& line, const vector<Primitive*>& primitives, Vector& r
     return ret;
 }
 
-Vector phong(const Vector& point, const Vector& ref, const Vector& normal, const vector<Primitive*>& primitives) {
+Vector phong(const Vector& point, const Vector& ref, const Vector& normal) {
 //    Vector intensity = kA * iA;
 //    Vector l = (lightSource - point).norm();
 //    Vector v = (ref - point).norm();
@@ -378,7 +390,7 @@ Vector phong(const Vector& point, const Vector& ref, const Vector& normal, const
 //    Line line; line.start = point; line.u = (lightSource - point).norm();
 //    Vector result;
 //    int resultId;
-//    if (intersect(line, primitives, result, resultId))
+//    if (intersect(line, objects, result, resultId))
 //        return intensity;
 //    float productDiff = dot(l, normal);
 //    if (productDiff > 0) diff = kD * productDiff;
@@ -405,7 +417,7 @@ Vector phong(const Vector& point, const Vector& ref, const Vector& normal, const
     Line line = Line(p,l,false);
     Vector result;
     int resultId;
-    if (intersect(line, primitives, result, resultId)) {
+    if (intersect(line, result, resultId)) {
         return intensity;
     }
 
@@ -422,30 +434,30 @@ Vector phong(const Vector& point, const Vector& ref, const Vector& normal, const
     return intensity;
 }
 
-Color light(const Line& line, const vector<Primitive*>& primitives, int depth) {
+Color light(const Line& line, int depth) {
     Color ret;
     Primitive* prim;
     int id;
     Vector point;
     Vector normal;
     if (depth == 0) return ret;
-    if (intersect(line, primitives, point, id)) {
-        prim = primitives[id];
+    if (intersect(line, point, id)) {
+        prim = objects[id];
         normal = prim->normal(point);
-        Vector ph = phong(point, line.start, normal, primitives);
+        Vector ph = phong(point, line.start, normal);
         ret = prim->color * ph;
         Line refl;
         refl.start = point;
         refl.u = reflect(line.u, normal).norm();
         refl.inside = line.inside;
-        Color rf = light(refl, primitives, depth - 1);
+        Color rf = light(refl, depth - 1);
         ret += rf * kR;
         if (prim->transparent) {
             Line refr;
             refr.start = point;
             refr.u = refract(line, normal).norm();
             refr.inside = !line.inside;
-            Color rt = light(refr, primitives, depth - 1);
+            Color rt = light(refr, depth - 1);
             ret += rt * kT;
         }
     }
@@ -453,20 +465,6 @@ Color light(const Line& line, const vector<Primitive*>& primitives, int depth) {
 }
 
 //============================================================================== MAIN
-
-int window;
-
-float canvas[WINDOW_SIZE * WINDOW_SIZE * 3];
-
-vector<Primitive*> objects;
-
-Vector from(0, -3, 0);
-Vector at(0, 0, 0);
-Vector up(0, 0, 1);
-Vector rv;
-float angDeg = 45;
-int resolution = WINDOW_SIZE;
-int depth = 5;
 
 Line ray(int x, int y) {
     Line ret;
@@ -489,23 +487,78 @@ void updateVector() {
 void initWindow() {
     glClearColor(0, 0, 0, 0);
 }
-
+    
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
-    memset(canvas, 0.0f, sizeof(canvas));
-    for (int x = 0; x < resolution; x++)
+//    glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
+//    glLoadIdentity();
+    memset(buffer, 0.0f, sizeof(buffer));
+//    pixelBuffer.clear();
+//    for (int i = 0; i < resolution * resolution; i++) {
+//        pixelBuffer.at(i).r = 0.0f;
+//        pixelBuffer.at(i).g = 0.0f;
+//        pixelBuffer.at(i).b = 0.0f;
+//    }
+    for (int x = 0; x < resolution; x++) {
         for (int y = 0; y < resolution; y++) {
             Line r = ray(x, y);
-            Color f = light(r, objects, depth);
-            makePixel(x, y, f, canvas, resolution);
+            Color f = light(r, depth);
+            makePixel(x, y, f);
+//            pixelBuffer.push_back(f);
+//            pixelBuffer.at(x * resolution + y).r = f.r;
+//            pixelBuffer.at(x * resolution + y).g = f.g;
+//            pixelBuffer.at(x * resolution + y).b = f.b;
         }
-    normalize(canvas, resolution);
-    glDrawPixels(resolution, resolution, GL_RGB, GL_FLOAT, canvas);
+    }
+    normalize();
+    GLfloat best = 0.0;
+    for (int i = 0; i < resolution * resolution * 3; i++) {
+        if (buffer[i] > best)
+            best = buffer[i];
+    }
+    if (best > 0.0) {
+        for (int i = 0; i < resolution * resolution * 3; i++)
+            buffer[i] /= best;
+    }
+//    for (int i = 0; i < resolution*resolution; i++) {
+//        if (pixelBuffer.at(i).r > best) {
+//            best = pixelBuffer.at(i).r;
+//        }
+//        if (pixelBuffer.at(i).g > best) {
+//            best = pixelBuffer.at(i).g;
+//        }
+//        if (pixelBuffer.at(i).b > best) {
+//            best = pixelBuffer.at(i).b;
+//        }
+//    }
+//    cout << "best:" << best << endl;
+
+//    if (best > 0.0) {
+//        for (int i = 0; i < resolution*resolution; i++) {
+//            pixelBuffer.at(i).r /= best;
+//            pixelBuffer.at(i).g /= best;
+//            pixelBuffer.at(i).b /= best;
+//        }
+//    }
+    glDrawPixels(resolution, resolution, GL_RGB, GL_FLOAT, buffer);
+//    for (int x = 0; x < resolution; x++) {
+//        for (int y = 0; y < resolution; y++) {
+//            // draw pixel
+//            glPointSize(1);
+//            Color cur = pixelBuffer.at(x * resolution + y);
+//            glBegin(GL_POINTS);
+//            glColor3f(cur.r,cur.g,cur.b);
+//            glVertex2f(x,y);
+//            glEnd();
+//        }
+//    }
+//    cout << "Swap" << endl;
     glutSwapBuffers();
 }
 
 void refreshFunc() {
-    glutPostWindowRedisplay(window);
+//    glutPostWindowRedisplay(window);
+    glutPostRedisplay();
 }
 
 void get() {
@@ -559,9 +612,10 @@ void set() {
 void init(int argc, char** argv) {
     glutInit(&argc, argv);
 
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(600, 600);
-    glutInitWindowPosition(100, 100);
+//    glutInitWindowPosition(100, 100);
+    glutInitWindowPosition(600, 600);
 
     Quadratic* org = newSphere(Vector(0, 0, 0), 0.1);
     org->color = Color(1, 1, 1);
@@ -628,6 +682,10 @@ void init(int argc, char** argv) {
 //    objects.push_back(p3);
 //    objects.push_back(p4);
     updateVector();
+    
+//    for (int i = 0; i < resolution * resolution; i++) {
+//        pixelBuffer.push_back(Color());
+//    }
 }
 
 void keyFunc(unsigned char ch, int x, int y) {
@@ -635,15 +693,21 @@ void keyFunc(unsigned char ch, int x, int y) {
         get();
     if (ch == 's')
         set();
+    glutPostRedisplay();
 }
 
+void idle() {
+    glutPostRedisplay();
+}
+    
 int main(int argc, char** argv) {
     init(argc, argv);
     window = glutCreateWindow("OpenGL Project 5");
     initWindow();
     glutDisplayFunc(display);
     glutKeyboardFunc(keyFunc);
+    glutIdleFunc(idle);
+    glClearColor(0,0,0,0);
     glutMainLoop();
     return 0;
 }
-
