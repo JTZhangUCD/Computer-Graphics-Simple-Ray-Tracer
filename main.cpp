@@ -142,10 +142,17 @@ float bigK = 10;
 float kR = 0.5, kT = 0.5;
 float eta = 1.5; // refraction coef
 Vector lightSource(0, 1, 0);
+//float iA = 0.1, iL = 1;
+//Vector kA(1, 1, 1), kD(1, 1, 1), kS(.75, .75, .75);
+//int bigN = 1;
+//float bigK = 2;
+//float kR = 0.5, kT = 0.5;
+//float eta = 1.5; // refraction coef
+//Vector lightSource(0, 0, 1);
     
 struct Line { // ray
     Vector start; // starting point
-    Vector u; // direction
+    Vector u; // unit-direction
     bool inside; // is inside of an object
     Line(const Vector& start1, const Vector& u1, bool inside1) {
         start = start1; u = u1; inside = inside1;
