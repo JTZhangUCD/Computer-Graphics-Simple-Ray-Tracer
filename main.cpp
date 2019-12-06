@@ -17,139 +17,74 @@
 using namespace std;
 
 //============================================================================== POINT
-class Point3f {
-public:
-    float x, y, z;
-    Point3f():x(0.0), y(0.0), z(0.0){}
-    Point3f(float vx, float vy, float vz):x(vx), y(vy), z(vz){}
-    int xInt() const;
-    int yInt() const;
-    int zInt() const;
-    float length() const;
-    Point3f& norm();
-    void show() const;
-    Point3f& operator+=(const Point3f& r);
-    Point3f& operator-=(const Point3f& r);
-    Point3f& operator*=(float a);
-    Point3f& operator/=(float a);
+struct Vector {
+    float x,y,z;
+    Vector(double x1, double y1, double z1) {
+        x = x1; y = y1; z = z1;
+    }
+    Vector(void) {
+        x = 0; y = 0; z = 0;
+    }
+    inline Vector operator + (const Vector& v1)const {
+        return Vector(x+v1.x, y+v1.y, z+v1.z);
+    }
+    inline Vector operator - (void)const {
+        return Vector(-x, -y, -z);
+    }
+    inline Vector operator - (const Vector& v1)const {
+        return Vector(x-v1.x, y-v1.y, z-v1.z);
+    }
+    inline double operator * (const Vector& v1)const{
+        return x * v1.x + y * v1.y + z * v1.z;
+    }
+    inline Vector operator * (const float f)const{
+        return Vector(x * f, y * f, z * f);
+    }
+    inline Vector operator / (const float f)const{
+        return Vector(x / f, y / f, z / f);
+    }
+    inline Vector &operator += (const Vector& v1) {
+        x += v1.x; y += v1.y; z += v1.z;
+        return *this;
+    }
+    inline Vector &operator -= (const Vector& v1) {
+        x -= v1.x; y -= v1.y; z -= v1.z;
+        return *this;
+    }
+    inline Vector &operator *= (float f) {
+        x *= f; y *= f; z *= f;
+        return *this;
+    }
+    inline Vector &operator /= (float f) {
+        x /= f; y /= f; z /= f;
+        return *this;
+    }
+    inline float length(void)const {
+        return sqrt(x*x + y*y + z*z);
+    }
+    inline Vector& norm(void) {
+        float length = sqrt(x*x + y*y + z*z);
+        x /= length; y /= length; z /= length;
+        return *this;
+    }
 };
 
-inline Point3f& Point3f::norm() {
-    (*this) /= length();
-    return *this;
+Vector cross(const Vector& v1, const Vector& v2) {
+    return Vector(v1.y*v2.z - v1.z*v2.y,v1.z*v2.x - v1.x*v2.z,v1.x*v2.y - v1.y*v2.x);
 }
 
-inline void Point3f::show() const {
-    glVertex3f(x, y, z);
+float dot(const Vector& v1, const Vector& v2) {
+    return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
 }
 
-inline Point3f cross(const Point3f& l, const Point3f& r) {
-    Point3f ret;
-    ret.x = l.y * r.z - l.z * r.y;
-    ret.y = l.z * r.x - l.x * r.z;
-    ret.z = l.x * r.y - l.y * r.x;
-    return ret;
-}
-
-inline float dot(const Point3f& l, const Point3f &r) {
-    return l.x * r.x + l.y * r.y + l.z * r.z;
-}
-
-istream& operator>>(istream& in, Point3f& p) {
+istream& operator>>(istream& in, Vector& p) {
     in >> p.x >> p.y >> p.z;
     return in;
 }
 
-ostream& operator<<(ostream& out, const Point3f& p) {
+ostream& operator<<(ostream& out, const Vector& p) {
     out << p.x << ' ' << p.y << ' ' << p.z;
     return out;
-}
-
-int Point3f::xInt() const {
-    return round(x);
-}
-
-int Point3f::yInt() const {
-    return round(y);
-}
-
-int Point3f::zInt() const {
-    return round(z);
-}
-
-float Point3f::length() const {
-    return sqrt(x*x + y*y + z*z);
-}
-
-Point3f& Point3f::operator+=(const Point3f& r) {
-    x += r.x;
-    y += r.y;
-    z += r.z;
-    return *this;
-}
-
-Point3f& Point3f::operator-=(const Point3f& r) {
-    x -= r.x;
-    y -= r.y;
-    z -= r.z;
-    return *this;
-}
-
-Point3f& Point3f::operator*=(float a) {
-    x *= a;
-    y *= a;
-    z *= a;
-    return *this;
-}
-Point3f& Point3f::operator/=(float a) {
-    x /= a;
-    y /= a;
-    z /= a;
-    return *this;
-}
-
-Point3f operator+(const Point3f& l, const Point3f& r) {
-    Point3f ret = l;
-    ret += r;
-    return ret;
-}
-
-Point3f operator-(const Point3f& l, const Point3f& r) {
-    Point3f ret = l;
-    ret -= r;
-    return ret;
-}
-
-Point3f operator*(const Point3f& l, const Point3f& r) {
-    Point3f ret = l;
-    ret.x *= r.x;
-    ret.y *= r.y;
-    ret.z *= r.z;
-    return ret;
-}
-
-Point3f operator*(const Point3f& l, float a) {
-    Point3f ret = l;
-    ret *= a;
-    return ret;
-}
-
-Point3f operator/(const Point3f& l, float a){
-    Point3f ret = l;
-    ret /= a;
-    return ret;
-}
-
-Point3f operator*(float a, const Point3f& l) {
-    Point3f ret = l;
-    ret *= a;
-    return ret;
-}
-
-Point3f operator/(float a, const Point3f& l){
-    Point3f ret = l;
-    ret /= a;
-    return ret;
 }
     
 //============================================================================== COLOR
@@ -161,7 +96,7 @@ public:
     Color3f(float vr, float vg, float vb):r(vr),g(vg), b(vb){}
     Color3f& operator+=(const Color3f& rhs);
     Color3f& operator-=(const Color3f& rhs);
-    Color3f& operator*=(const Point3f& rhs);
+    Color3f& operator*=(const Vector& rhs);
     Color3f& operator*=(float a);
     Color3f& operator/=(float a);
 };
@@ -180,7 +115,7 @@ Color3f& Color3f::operator-=(const Color3f& rhs) {
     return *this;
 }
 
-Color3f& Color3f::operator*=(const Point3f& rhs) {
+Color3f& Color3f::operator*=(const Vector& rhs) {
     r *= rhs.x;
     g *= rhs.y;
     b *= rhs.z;
@@ -213,7 +148,7 @@ Color3f operator-(const Color3f& l, const Color3f& rhs) {
     return ret;
 }
 
-Color3f operator*(const Color3f& l, const Point3f& r) {
+Color3f operator*(const Color3f& l, const Vector& r) {
     Color3f ret = l;
     ret *= r;
     return ret;
@@ -242,20 +177,20 @@ ostream& operator<<(ostream& out, const Color3f& p) {
 
 //============================================================================== OBJECT
 float iA = 0.2, iL = 1;
-Point3f kA(1, 1, 1), kD(1, 1, 1), kS(1, 1, 1);
+Vector kA(1, 1, 1), kD(1, 1, 1), kS(1, 1, 1);
 int bigN = 5;
 float bigK = 10;
 float kR = 0.5, kT = 0.5;
 float eta = 1.5;
-Point3f lightSource(0, 1, 0);
+Vector lightSource(0, 1, 0);
 
 class Line {
 public:
-    Point3f start;
-    Point3f u;
+    Vector start;
+    Vector u;
     bool inside;
 public:
-    Line(const Point3f& start_, const Point3f& u_, bool inside_):
+    Line(const Vector& start_, const Vector& u_, bool inside_):
         start(start_), u(u_), inside(inside_){}
     Line():inside(false){}
 };
@@ -265,34 +200,34 @@ public:
     bool transparent;
     Color3f color;
 public:
-    virtual bool intersect(const Line& l, Point3f& result) = 0;
-    virtual Point3f normal(const Point3f& p) = 0;
+    virtual bool intersect(const Line& l, Vector& result) = 0;
+    virtual Vector normal(const Vector& p) = 0;
 };
 
 class Polygon : public Primitive {
 public:
-    vector<Point3f> v;
-    Point3f n;
+    vector<Vector> v;
+    Vector n;
 public:
-    bool intersect(const Line& l, Point3f& result);
-    Point3f normal(const Point3f& p);
+    bool intersect(const Line& l, Vector& result);
+    Vector normal(const Vector& p);
 };
 
 class Sphere : public Primitive {
 public:
-    Point3f center;
+    Vector center;
     float radius;
 public:
-    bool intersect(const Line& l, Point3f& result);
-    Point3f normal(const Point3f& p);
+    bool intersect(const Line& l, Vector& result);
+    Vector normal(const Vector& p);
 };
 
 class Quadratic : public Primitive {
 public:
     float A, B, C, D, E, F, G, H, I, J;
 public:
-    bool intersect(const Line& l, Point3f& result);
-    Point3f normal(const Point3f& p);
+    bool intersect(const Line& l, Vector& result);
+    Vector normal(const Vector& p);
 };
 
 inline void makePixel(int x, int y, const Color3f& c, GLfloat *pixels, int resolution) {
@@ -314,7 +249,7 @@ inline void normalize(GLfloat *pixels, int resolution) {
     }
 }
 
-bool Polygon::intersect(const Line& l, Point3f& result) {
+bool Polygon::intersect(const Line& l, Vector& result) {
     float D = -dot(n, v[0]);
     float s = -(D+dot(n, l.start)) / dot(n, l.u);
     bool ret = POS(s);
@@ -325,19 +260,19 @@ bool Polygon::intersect(const Line& l, Point3f& result) {
     return ret;
 }
 
-Point3f Polygon::normal(const Point3f& p) {
+Vector Polygon::normal(const Vector& p) {
     return n;
 }
 
-bool Sphere::intersect(const Line& l, Point3f& result) {
-    Point3f diff = center - l.start;
+bool Sphere::intersect(const Line& l, Vector& result) {
+    Vector diff = center - l.start;
     float base = dot(l.u, diff);
     float delta = base * base - dot(diff, diff) + radius * radius;
     if (delta < 0)
         return false;
     delta = sqrt(delta);
-    Point3f p1 = l.start + (base - delta) * l.u;
-    Point3f p2 = l.start + (base + delta) * l.u;
+    Vector p1 = l.start + l.u * (base - delta);
+    Vector p2 = l.start + l.u * (base + delta);
     bool v1 = POS((p1 - l.start).length()) && POS(base - delta);
     bool v2 = POS((p2 - l.start).length()) && POS(base + delta);
     if (v1 && v2)
@@ -350,12 +285,12 @@ bool Sphere::intersect(const Line& l, Point3f& result) {
     return true;
 }
 
-Point3f Sphere::normal(const Point3f& p) {
-    Point3f ret = (p - center).norm();
+Vector Sphere::normal(const Vector& p) {
+    Vector ret = (p - center).norm();
     return ret;
 }
 
-bool Quadratic::intersect(const Line& l, Point3f& result) {
+bool Quadratic::intersect(const Line& l, Vector& result) {
     float Aq = A * l.u.x * l.u.x + B * l.u.y * l.u.y + C * l.u.z * l.u.z
                 + D * l.u.x * l.u.y + E * l.u.x * l.u.z + F * l.u.y * l.u.z;
     float Bq = 2*A * l.start.x * l.u.x + 2*B * l.start.y * l.u.y + 2*C * l.start.z * l.u.z
@@ -370,12 +305,12 @@ bool Quadratic::intersect(const Line& l, Point3f& result) {
     if (delta < 0)
         return false;
     delta = sqrt(delta);
-    Point3f p1, p2;
+    Vector p1, p2;
     if (Aq == 0)
-        p1 = p2 = l.start + (-Cq / Bq) * l.u;
+        p1 = p2 = l.start + l.u * (-Cq / Bq);
     else {
-        p1 = l.start + (- Bq - delta) / 2 / Aq * l.u;
-        p2 = l.start + (- Bq + delta) / 2 / Aq * l.u;
+        p1 = l.start + l.u * (- Bq - delta) / 2 / Aq;
+        p2 = l.start + l.u * (- Bq + delta) / 2 / Aq;
     }
     bool v1 = POS((p1 - l.start).length()) && POS(- Bq - delta);
     bool v2 = POS((p2 - l.start).length()) && POS(- Bq + delta);
@@ -389,8 +324,8 @@ bool Quadratic::intersect(const Line& l, Point3f& result) {
     return true;
 }
 
-Point3f Quadratic::normal(const Point3f& p) {
-    Point3f ret;
+Vector Quadratic::normal(const Vector& p) {
+    Vector ret;
     ret.x = 2*A*p.x + D*p.y + E*p.z + G;
     ret.y = 2*B*p.y + D*p.x + F*p.z + H;
     ret.z = 2*C*p.z + E*p.x + F*p.y + I;
@@ -398,7 +333,7 @@ Point3f Quadratic::normal(const Point3f& p) {
     return ret;
 }
 
-Polygon* newTriangle(const Point3f& v1, const Point3f& v2, const Point3f& v3, const Point3f& normal) {
+Polygon* newTriangle(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& normal) {
     Polygon* ret = new Polygon();
     ret->v.push_back(v1);
     ret->v.push_back(v2);
@@ -407,7 +342,7 @@ Polygon* newTriangle(const Point3f& v1, const Point3f& v2, const Point3f& v3, co
     return ret;
 }
 
-Polygon* newSquare(const Point3f& v1, const Point3f& v2, const Point3f& v3, const Point3f& v4, const Point3f& normal) {
+Polygon* newSquare(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& v4, const Vector& normal) {
     Polygon* ret = new Polygon();
     ret->v.push_back(v1);
     ret->v.push_back(v2);
@@ -417,7 +352,7 @@ Polygon* newSquare(const Point3f& v1, const Point3f& v2, const Point3f& v3, cons
     return ret;
 }
 
-Quadratic* newSphere(const Point3f& center, float radius) {
+Quadratic* newSphere(const Vector& center, float radius) {
     Quadratic* ret = new Quadratic();
     ret->A = ret->B = ret->C = 1;
     ret->D = ret->E = ret->F = 0;
@@ -428,7 +363,7 @@ Quadratic* newSphere(const Point3f& center, float radius) {
     return ret;
 }
 
-Quadratic* newEllipsoid(const Point3f& center, float a, float b, float c) {
+Quadratic* newEllipsoid(const Vector& center, float a, float b, float c) {
     Quadratic* ret = new Quadratic();
     ret->A = b * b + c * c;
     ret->B = a * a + c * c;
@@ -444,19 +379,19 @@ Quadratic* newEllipsoid(const Point3f& center, float a, float b, float c) {
     return ret;
 }
 
-Point3f refract(const Line& l, const Point3f& normal) {
+Vector refract(const Line& l, const Vector& normal) {
     float r = l.inside ? eta : 1 / eta;
-    float cosThetaI = dot(-1 * l.u, normal);
+    float cosThetaI = dot(-l.u, normal);
     float cosThetaR = sqrt(1 - (r * r) * (1 - cosThetaI * cosThetaI));
-    return r * l.u - (cosThetaR - r * cosThetaI) * normal;
+    return l.u * r - normal * (cosThetaR - r * cosThetaI);
 }
 
-Point3f reflect(const Point3f& u, const Point3f& normal) {
-    return u - 2 * normal * dot(normal, u);
+Vector reflect(const Vector& u, const Vector& normal) {
+    return u - normal * 2 * dot(normal, u);
 }
     
-bool intersect(const Line& line, const vector<Primitive*>& primitives, Point3f& result, int& resultId) {
-    Point3f best, now;
+bool intersect(const Line& line, const vector<Primitive*>& primitives, Vector& result, int& resultId) {
+    Vector best, now;
     int bestId;
     float bestDist = 0, nowDist;
     bool ret = false;
@@ -478,23 +413,23 @@ bool intersect(const Line& line, const vector<Primitive*>& primitives, Point3f& 
     return ret;
 }
 
-Point3f phong(const Point3f& point, const Point3f& ref, const Point3f& normal, const vector<Primitive*>& primitives) {
-    Point3f intensity = kA * iA;
-    Point3f l = (lightSource - point).norm();
-    Point3f v = (ref - point).norm();
-    Point3f r = (2 * normal * dot(normal, l) - l).norm();
-    Point3f diff;
+Vector phong(const Vector& point, const Vector& ref, const Vector& normal, const vector<Primitive*>& primitives) {
+    Vector intensity = kA * iA;
+    Vector l = (lightSource - point).norm();
+    Vector v = (ref - point).norm();
+    Vector r = (normal * 2.0 * dot(normal, l) - l).norm();
+    Vector diff;
     Line line; line.start = point; line.u = (lightSource - point).norm();
-    Point3f result;
+    Vector result;
     int resultId;
     if (intersect(line, primitives, result, resultId))
         return intensity;
     float productDiff = dot(l, normal);
-    if (productDiff > 0) diff = productDiff * kD;
-    Point3f spec;
+    if (productDiff > 0) diff = kD * productDiff;
+    Vector spec;
     float productSpec = dot(r, v);
-    if (productDiff > 0 && productSpec > 0) spec = productSpec * kS;
-    intensity += iL / ((ref - point).length() + bigK) * (diff + spec);
+    if (productDiff > 0 && productSpec > 0) spec = kS * productSpec;
+    intensity += (diff + spec) * iL / ((ref - point).length() + bigK);
     return intensity;
 }
 
@@ -502,13 +437,13 @@ Color3f light(const Line& line, const vector<Primitive*>& primitives, int depth)
     Color3f ret;
     Primitive* prim;
     int id;
-    Point3f point;
-    Point3f normal;
+    Vector point;
+    Vector normal;
     if (depth == 0) return ret;
     if (intersect(line, primitives, point, id)) {
         prim = primitives[id];
         normal = prim->normal(point);
-        Point3f ph = phong(point, line.start, normal, primitives);
+        Vector ph = phong(point, line.start, normal, primitives);
         ret = prim->color * ph;
         Line refl;
         refl.start = point;
@@ -536,10 +471,10 @@ float canvas[WINDOW_SIZE * WINDOW_SIZE * 3];
 
 vector<Primitive*> objects;
 
-Point3f from(0, -3, 0);
-Point3f at(0, 0, 0);
-Point3f up(0, 0, 1);
-Point3f rv;
+Vector from(0, -3, 0);
+Vector at(0, 0, 0);
+Vector up(0, 0, 1);
+Vector rv;
 float angDeg = 45;
 int resolution = WINDOW_SIZE;
 int depth = 5;
@@ -549,9 +484,9 @@ Line ray(int x, int y) {
     ret.start = from;
     float xx = (float)x/(float)resolution*2 - 1;
     float yy = (float)y/(float)resolution*2 - 1;
-    Point3f p = from;
-    p += tan(angDeg / 180 * PI) * xx * rv;
-    p += tan(angDeg / 180 * PI) * yy * up;
+    Vector p = from;
+    p += rv * tan(angDeg / 180 * PI) * xx;
+    p += up * tan(angDeg / 180 * PI) * yy;
     p += (at - from).norm();
     ret.u = (p - from).norm();
     return ret;
@@ -647,57 +582,57 @@ void init(int argc, char** argv) {
     glutInitWindowSize(600, 600);
     glutInitWindowPosition(100, 100);
 
-    Quadratic* org = newSphere(Point3f(0, 0, 0), 0.1);
+    Quadratic* org = newSphere(Vector(0, 0, 0), 0.1);
     org->color = Color3f(1, 1, 1);
     org->transparent = true;
-    Quadratic* s = newSphere(Point3f(-0.5, 1, -0.5), 0.4);
+    Quadratic* s = newSphere(Vector(-0.5, 1, -0.5), 0.4);
     s->color = Color3f(1, 1, 1);
     s->transparent = false;
-    Quadratic* s2 = newSphere(Point3f(1, 1.5, 1), 0.6);
+    Quadratic* s2 = newSphere(Vector(1, 1.5, 1), 0.6);
     s2->color = Color3f(1, 1, 1);
     s2->transparent = true;
-    Polygon* t = newTriangle(Point3f(-1, 2, 2),
-                             Point3f(-1, 2, 1),
-                             Point3f(-1, 1, 2),
-                             Point3f(-1, 0, 0));
+    Polygon* t = newTriangle(Vector(-1, 2, 2),
+                             Vector(-1, 2, 1),
+                             Vector(-1, 1, 2),
+                             Vector(-1, 0, 0));
     t->color = Color3f(1, 1, 1);
     t->transparent = true;
-    Polygon* t2 = newTriangle(Point3f(0, 2, 2),
-                              Point3f(-1, 2, 1),
-                              Point3f(-1, 2, 2),
-                              Point3f(0, 1, 0));
+    Polygon* t2 = newTriangle(Vector(0, 2, 2),
+                              Vector(-1, 2, 1),
+                              Vector(-1, 2, 2),
+                              Vector(0, 1, 0));
     t2->color = Color3f(1, 1, 1);
     t2->transparent = true;
-    Polygon* t3 = newTriangle(Point3f(-1, 2, 2),
-                              Point3f(-1, 1, 2),
-                              Point3f(0, 2, 2),
-                              Point3f(0, 0, 1));
+    Polygon* t3 = newTriangle(Vector(-1, 2, 2),
+                              Vector(-1, 1, 2),
+                              Vector(0, 2, 2),
+                              Vector(0, 0, 1));
     t3->color = Color3f(1, 1, 1);
     t3->transparent = true;
-    Polygon* t4 = newTriangle(Point3f(0, 2, 2),
-                              Point3f(-1, 1, 2),
-                              Point3f(-1, 2, 1),
-                              Point3f(1, -1, -1));
+    Polygon* t4 = newTriangle(Vector(0, 2, 2),
+                              Vector(-1, 1, 2),
+                              Vector(-1, 2, 1),
+                              Vector(1, -1, -1));
     t4->color = Color3f(1, 1, 1);
     t4->transparent = true;
-    Polygon* p = newSquare(Point3f(5, 6, -4), Point3f(5, 6, 4),
-                           Point3f(-5, 6, 4), Point3f(-5, 6, -4),
-                           Point3f(0, -1, 0));
+    Polygon* p = newSquare(Vector(5, 6, -4), Vector(5, 6, 4),
+                           Vector(-5, 6, 4), Vector(-5, 6, -4),
+                           Vector(0, -1, 0));
     p->color = Color3f(1, 0.85, 0.25);
     p->transparent = false;
-    Polygon* p2 = newSquare(Point3f(-5, -6, -4), Point3f(-5, 6, -4),
-                           Point3f(-5, 6, 4), Point3f(-5, -6, 4),
-                           Point3f(1, 0, 0));
+    Polygon* p2 = newSquare(Vector(-5, -6, -4), Vector(-5, 6, -4),
+                           Vector(-5, 6, 4), Vector(-5, -6, 4),
+                           Vector(1, 0, 0));
     p2->color = Color3f(0, 0.5, 1);
     p2->transparent = false;
-    Polygon* p3 = newSquare(Point3f(5, 6, -4), Point3f(5, -6, -4),
-                           Point3f(5, -6, 4), Point3f(5, 6, 4),
-                           Point3f(-1, 0, 0));
+    Polygon* p3 = newSquare(Vector(5, 6, -4), Vector(5, -6, -4),
+                           Vector(5, -6, 4), Vector(5, 6, 4),
+                           Vector(-1, 0, 0));
     p3->color = Color3f(1, 0.2, 0);
     p3->transparent = false;
-    Polygon* p4 = newSquare(Point3f(5, 6, 4), Point3f(5, -6, 4),
-                           Point3f(-5, -6, 4), Point3f(-5, 6, 4),
-                           Point3f(0, 0, -1));
+    Polygon* p4 = newSquare(Vector(5, 6, 4), Vector(5, -6, 4),
+                           Vector(-5, -6, 4), Vector(-5, 6, 4),
+                           Vector(0, 0, -1));
     p4->color = Color3f(0.5, 1, 0);
     p4->transparent = false;
     objects.push_back(org);
