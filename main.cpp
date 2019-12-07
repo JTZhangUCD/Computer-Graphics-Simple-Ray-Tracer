@@ -272,8 +272,8 @@ public:
 vector<Primitive*> objects; //=================================================================== global
 int window;
 
-float buffer[WINDOW_SIZE * WINDOW_SIZE * 3];
-//vector<Color> pixelBuffer;
+//float buffer[WINDOW_SIZE * WINDOW_SIZE * 3];
+vector<Color> pixelBuffer;
     
 Vector from(0, -3, 0);
 Vector at(0, 0, 0);
@@ -283,23 +283,23 @@ float angDeg = 45;
 int resolution = WINDOW_SIZE;
 int depth = 5;
 
-inline void makePixel(int x, int y, const Color& c) {
-    buffer[(y * resolution + x) * 3] = c.r;
-    buffer[(y * resolution + x) * 3 + 1] = c.g;
-    buffer[(y * resolution + x) * 3 + 2] = c.b;
-}
-inline void normalize(void) {
-    // best: 最亮的点
-    GLfloat best = 0.0;
-    for (int i = 0; i < resolution * resolution * 3; i++) {
-        if (buffer[i] > best)
-            best = buffer[i];
-    }
-    if (best > 0.0) {
-        for (int i = 0; i < resolution * resolution * 3; i++)
-            buffer[i] /= best;
-    }
-}
+//inline void makePixel(int x, int y, const Color& c) {
+//    buffer[(y * resolution + x) * 3] = c.r;
+//    buffer[(y * resolution + x) * 3 + 1] = c.g;
+//    buffer[(y * resolution + x) * 3 + 2] = c.b;
+//}
+//inline void normalize(void) {
+//    // best: 最亮的点
+//    GLfloat best = 0.0;
+//    for (int i = 0; i < resolution * resolution * 3; i++) {
+//        if (buffer[i] > best)
+//            best = buffer[i];
+//    }
+//    if (best > 0.0) {
+//        for (int i = 0; i < resolution * resolution * 3; i++)
+//            buffer[i] /= best;
+//    }
+//}
 
 Polygon* newTriangle(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& normal) {
     Polygon* ret = new Polygon();
@@ -492,8 +492,8 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT);
 //    glClear(GL_DEPTH_BUFFER_BIT|GL_COLOR_BUFFER_BIT);
 //    glLoadIdentity();
-    memset(buffer, 0.0f, sizeof(buffer));
-//    pixelBuffer.clear();
+//    memset(buffer, 0.0f, sizeof(buffer));
+    pixelBuffer.clear();
 //    for (int i = 0; i < resolution * resolution; i++) {
 //        pixelBuffer.at(i).r = 0.0f;
 //        pixelBuffer.at(i).g = 0.0f;
@@ -503,56 +503,56 @@ void display() {
         for (int y = 0; y < resolution; y++) {
             Line r = ray(x, y);
             Color f = light(r, depth);
-            makePixel(x, y, f);
-//            pixelBuffer.push_back(f);
+//            makePixel(x, y, f);
+            pixelBuffer.push_back(f);
 //            pixelBuffer.at(x * resolution + y).r = f.r;
 //            pixelBuffer.at(x * resolution + y).g = f.g;
 //            pixelBuffer.at(x * resolution + y).b = f.b;
         }
     }
-    normalize();
+//    normalize();
     GLfloat best = 0.0;
-    for (int i = 0; i < resolution * resolution * 3; i++) {
-        if (buffer[i] > best)
-            best = buffer[i];
-    }
-    if (best > 0.0) {
-        for (int i = 0; i < resolution * resolution * 3; i++)
-            buffer[i] /= best;
-    }
-//    for (int i = 0; i < resolution*resolution; i++) {
-//        if (pixelBuffer.at(i).r > best) {
-//            best = pixelBuffer.at(i).r;
-//        }
-//        if (pixelBuffer.at(i).g > best) {
-//            best = pixelBuffer.at(i).g;
-//        }
-//        if (pixelBuffer.at(i).b > best) {
-//            best = pixelBuffer.at(i).b;
-//        }
+//    for (int i = 0; i < resolution * resolution * 3; i++) {
+//        if (buffer[i] > best)
+//            best = buffer[i];
 //    }
-//    cout << "best:" << best << endl;
-
 //    if (best > 0.0) {
-//        for (int i = 0; i < resolution*resolution; i++) {
-//            pixelBuffer.at(i).r /= best;
-//            pixelBuffer.at(i).g /= best;
-//            pixelBuffer.at(i).b /= best;
-//        }
+//        for (int i = 0; i < resolution * resolution * 3; i++)
+//            buffer[i] /= best;
 //    }
-    glDrawPixels(resolution, resolution, GL_RGB, GL_FLOAT, buffer);
-//    for (int x = 0; x < resolution; x++) {
-//        for (int y = 0; y < resolution; y++) {
-//            // draw pixel
-//            glPointSize(1);
-//            Color cur = pixelBuffer.at(x * resolution + y);
-//            glBegin(GL_POINTS);
-//            glColor3f(cur.r,cur.g,cur.b);
-//            glVertex2f(x,y);
-//            glEnd();
-//        }
-//    }
-//    cout << "Swap" << endl;
+    for (int i = 0; i < resolution*resolution; i++) {
+        if (pixelBuffer.at(i).r > best) {
+            best = pixelBuffer.at(i).r;
+        }
+        if (pixelBuffer.at(i).g > best) {
+            best = pixelBuffer.at(i).g;
+        }
+        if (pixelBuffer.at(i).b > best) {
+            best = pixelBuffer.at(i).b;
+        }
+    }
+    cout << "best:" << best << endl;
+
+    if (best > 0.0) {
+        for (int i = 0; i < resolution*resolution; i++) {
+            pixelBuffer.at(i).r /= best;
+            pixelBuffer.at(i).g /= best;
+            pixelBuffer.at(i).b /= best;
+        }
+    }
+//    glDrawPixels(resolution, resolution, GL_RGB, GL_FLOAT, buffer);
+    for (int x = 0; x < resolution; x++) {
+        for (int y = 0; y < resolution; y++) {
+            // draw pixel
+//            glPointSize(6);
+            Color cur = pixelBuffer.at(x * resolution + y);
+            glBegin(GL_POINTS);
+            glColor3f(cur.r,cur.g,cur.b);
+            glVertex2f(x,y);
+            glEnd();
+        }
+    }
+    cout << "Swap" << endl;
     glutSwapBuffers();
 }
 
@@ -615,7 +615,7 @@ void init(int argc, char** argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(600, 600);
 //    glutInitWindowPosition(100, 100);
-    glutInitWindowPosition(600, 600);
+//    glutInitWindowPosition(600, 600);
 
     Quadratic* org = newSphere(Vector(0, 0, 0), 0.1);
     org->color = Color(1, 1, 1);
@@ -701,13 +701,93 @@ void idle() {
 }
     
 int main(int argc, char** argv) {
-    init(argc, argv);
+//    init(argc, argv);
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitWindowSize(600, 600);
+//    glutInitWindowPosition(100, 100);
+//    glutInitWindowPosition(600, 600);
+
+    Quadratic* org = newSphere(Vector(0, 0, 0), 0.1);
+    org->color = Color(1, 1, 1);
+    org->transparent = true;
+    Quadratic* s = newSphere(Vector(-0.5, 1, -0.5), 0.4);
+    s->color = Color(1, 1, 1);
+    s->transparent = false;
+    Quadratic* s2 = newSphere(Vector(1, 1.5, 1), 0.6);
+    s2->color = Color(1, 1, 1);
+    s2->transparent = true;
+    Polygon* t = newTriangle(Vector(-1, 2, 2),
+                             Vector(-1, 2, 1),
+                             Vector(-1, 1, 2),
+                             Vector(-1, 0, 0));
+    t->color = Color(1, 1, 1);
+    t->transparent = true;
+    Polygon* t2 = newTriangle(Vector(0, 2, 2),
+                              Vector(-1, 2, 1),
+                              Vector(-1, 2, 2),
+                              Vector(0, 1, 0));
+    t2->color = Color(1, 1, 1);
+    t2->transparent = true;
+    Polygon* t3 = newTriangle(Vector(-1, 2, 2),
+                              Vector(-1, 1, 2),
+                              Vector(0, 2, 2),
+                              Vector(0, 0, 1));
+    t3->color = Color(1, 1, 1);
+    t3->transparent = true;
+    Polygon* t4 = newTriangle(Vector(0, 2, 2),
+                              Vector(-1, 1, 2),
+                              Vector(-1, 2, 1),
+                              Vector(1, -1, -1));
+    t4->color = Color(1, 1, 1);
+    t4->transparent = true;
+    Polygon* p = newSquare(Vector(5, 6, -4), Vector(5, 6, 4),
+                           Vector(-5, 6, 4), Vector(-5, 6, -4),
+                           Vector(0, -1, 0));
+    p->color = Color(1, 0.85, 0.25);
+    p->transparent = false;
+    Polygon* p2 = newSquare(Vector(-5, -6, -4), Vector(-5, 6, -4),
+                           Vector(-5, 6, 4), Vector(-5, -6, 4),
+                           Vector(1, 0, 0));
+    p2->color = Color(0, 0.5, 1);
+    p2->transparent = false;
+    Polygon* p3 = newSquare(Vector(5, 6, -4), Vector(5, -6, -4),
+                           Vector(5, -6, 4), Vector(5, 6, 4),
+                           Vector(-1, 0, 0));
+    p3->color = Color(1, 0.2, 0);
+    p3->transparent = false;
+    Polygon* p4 = newSquare(Vector(5, 6, 4), Vector(5, -6, 4),
+                           Vector(-5, -6, 4), Vector(-5, 6, 4),
+                           Vector(0, 0, -1));
+    p4->color = Color(0.5, 1, 0);
+    p4->transparent = false;
+    objects.push_back(org);
+    objects.push_back(s);
+    objects.push_back(s2);
+//    objects.push_back(t);
+//    objects.push_back(t2);
+//    objects.push_back(t3);
+//    objects.push_back(t4);
+//    objects.push_back(p);
+//    objects.push_back(p2);
+//    objects.push_back(p3);
+//    objects.push_back(p4);
+    updateVector();
     window = glutCreateWindow("OpenGL Project 5");
     initWindow();
+    
+    glClearColor(0,0,0,0);
+//    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0,resolution,0,resolution);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
     glutDisplayFunc(display);
     glutKeyboardFunc(keyFunc);
     glutIdleFunc(idle);
-    glClearColor(0,0,0,0);
     glutMainLoop();
     return 0;
 }
+
+
