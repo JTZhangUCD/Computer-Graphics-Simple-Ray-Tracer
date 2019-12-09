@@ -34,40 +34,41 @@ struct Vector {
     inline Vector operator - (const Vector& v1)const {
         return Vector(x-v1.x, y-v1.y, z-v1.z);
     }
-    inline double operator * (const Vector& v1)const{
+    inline double operator * (const Vector& v1)const {
         return x*v1.x + y*v1.y + z*v1.z;
     }
-    inline Vector operator * (const float f)const{
+    inline Vector operator * (const float f)const {
         return Vector(x*f, y*f, z*f);
     }
-    inline Vector operator / (const float f)const{
+    inline Vector operator / (const float f)const {
         return Vector(x/f, y/f, z/f);
     }
     inline Vector &operator += (const Vector& v1) {
         x += v1.x; y += v1.y; z += v1.z;
         return *this;
-    }
-    inline Vector &operator -= (const Vector& v1) {
-        x -= v1.x; y -= v1.y; z -= v1.z;
-        return *this;
-    }
-    inline Vector &operator *= (float f) {
-        x *= f; y *= f; z *= f;
-        return *this;
-    }
-    inline Vector &operator /= (float f) {
-        x /= f; y /= f; z /= f;
-        return *this;
-    }
+    };
+//    inline Vector &operator -= (const Vector& v1) {
+//        x -= v1.x; y -= v1.y; z -= v1.z;
+//        return *this;
+//    };
+//    inline Vector &operator *= (float f) {
+//        x *= f; y *= f; z *= f;
+//        return *this;
+//    };
+//    inline Vector &operator /= (float f) {
+//        x /= f; y /= f; z /= f;
+//        return *this;
+//    };
     inline float length(void)const {
         return sqrt(x*x + y*y + z*z);
-    }
+    };
     inline Vector& norm(void) {
         float length = sqrt(x*x + y*y + z*z);
         x /= length; y /= length; z /= length;
         return *this;
-    }
+    };
 };
+    
 
 Vector cross(const Vector& v1, const Vector& v2) {
     return Vector(v1.y*v2.z - v1.z*v2.y,v1.z*v2.x - v1.x*v2.z,v1.x*v2.y - v1.y*v2.x);
@@ -82,13 +83,13 @@ istream& operator>>(istream& in, Vector& p) {
     return in;
 }
 
-ostream& operator<<(ostream& out, const Vector& p) {
-    out << p.x << ' ' << p.y << ' ' << p.z;
-    return out;
-}
+//ostream& operator<<(ostream& out, const Vector& p) {
+//    out << p.x << ' ' << p.y << ' ' << p.z;
+//    return out;
+//};
+
     
 //============================================================================== COLOR
-
 struct Color {
     float r,g,b;
     Color(float r1, float g1, float b1) {
@@ -97,41 +98,41 @@ struct Color {
     Color(void) {
         r = 0; g = 0; b = 0;
     }
-    inline Color operator + (const Color& v1)const {
-        return Color(r+v1.r, g+v1.g, b+v1.b);
-    }
-    inline Color operator - (const Color& v1)const {
-        return Color(r-v1.r, g-v1.g, b-v1.b);
-    }
+//    inline Color operator + (const Color& v1)const {
+//        return Color(r+v1.r, g+v1.g, b+v1.b);
+//    }
+//    inline Color operator - (const Color& v1)const {
+//        return Color(r-v1.r, g-v1.g, b-v1.b);
+//    }
     inline Color operator * (const Vector& v1)const {
         return Color(r-v1.x, g-v1.y, b-v1.z);
-    }
+    };
     inline Color operator * (const float f)const {
         return Color(r*f, g*f, b*f);
-    }
-    inline Color operator / (const float f)const {
-        return Color(r/f, g/f, b/f);
-    }
+    };
+//    inline Color operator / (const float f)const {
+//        return Color(r/f, g/f, b/f);
+//    }
     inline Color &operator += (const Color& v1) {
         r += v1.r; g += v1.g; b += v1.b;
         return *this;
-    }
-    inline Color &operator -= (const Color& v1) {
-        r -= v1.r; g -= v1.g; b -= v1.b;
-        return *this;
-    }
-    inline Color &operator *= (const Vector& v1) {
-        r *= v1.x; g *= v1.y; b *= v1.z;
-        return *this;
-    }
-    inline Color &operator *= (float f) {
-        r *= f; g *= f; b *= f;
-        return *this;
-    }
-    inline Color &operator /= (float f) {
-        r /= f; g /= f; b /= f;
-        return *this;
-    }
+    };
+//    inline Color &operator -= (const Color& v1) {
+//        r -= v1.r; g -= v1.g; b -= v1.b;
+//        return *this;
+//    };
+//    inline Color &operator *= (const Vector& v1) {
+//        r *= v1.x; g *= v1.y; b *= v1.z;
+//        return *this;
+//    };
+//    inline Color &operator *= (float f) {
+//        r *= f; g *= f; b *= f;
+//        return *this;
+//    };
+//    inline Color &operator /= (float f) {
+//        r /= f; g /= f; b /= f;
+//        return *this;
+//    };
 };
 
 //============================================================================== OBJECT
@@ -141,7 +142,8 @@ int bigN = 1;
 float bigK = 10;
 float kR = 0.5, kT = 0.5;
 float eta = 1.5; // refraction coef
-Vector lightSource(0, 1, 0);
+//Vector lightSource(0, 1, 0);
+Vector lightSource(0, 5, 0);
 //float iA = 0.1, iL = 1;
 //Vector kA(1, 1, 1), kD(1, 1, 1), kS(.75, .75, .75);
 //int bigN = 1;
@@ -157,75 +159,15 @@ struct Line { // ray
     Line(const Vector& start1, const Vector& u1, bool inside1) {
         start = start1; u = u1; inside = inside1;
     }
-    Line(void) {
-        inside = false;
-    }
+//    Line(void) {
+//        inside = false;
+//    }
 };
-
-class Primitive {
-public:
-    bool transparent; // is transparent
-    Color color; // color of the object
-public:
-    virtual bool intersect(const Line& l, Vector& result) = 0; // check if intersect a line
-    virtual Vector normal(const Vector& p) = 0; // get normal vector of a point
-};
-
-class Polygon : public Primitive { //这是一个面
-public:
-    vector<Vector> v; // list of vertices
-    Vector n;
-public:
-    bool intersect(const Line& l, Vector& result) {
-        float D = -dot(n, v[0]);
-        float s = -(D+dot(n, l.start)) / dot(n, l.u);
-        bool ret = POS(s);
-        result = l.start + l.u * s;
-        for (int i = 0; i < v.size(); i++)
-            if (ret)
-                ret = ret && dot(cross(v[i % v.size()] - result, v[(i+1) % v.size()] - result), n) > 0;
-        return ret;
-    }
-    Vector normal(const Vector& p) {
-        return n;
-    }
-};
-
-class Sphere : public Primitive {
-public:
-    Vector center;
-    float radius;
-public:
-    bool intersect(const Line& l, Vector& result) {
-        Vector diff = center - l.start;
-        float base = dot(l.u, diff);
-        float delta = base * base - dot(diff, diff) + radius * radius;
-        if (delta < 0)
-            return false;
-        delta = sqrt(delta);
-        Vector p1 = l.start + l.u * (base - delta);
-        Vector p2 = l.start + l.u * (base + delta);
-        bool v1 = POS((p1 - l.start).length()) && POS(base - delta);
-        bool v2 = POS((p2 - l.start).length()) && POS(base + delta);
-        if (v1 && v2)
-            result = (p1 - l.start).length() < (p2 - l.start).length() ? p1 : p2;
-        else if (v1)
-            result = p1;
-        else if (v2)
-            result = p2;
-        else return false;
-        return true;
-    }
-    Vector normal(const Vector& p) {
-        Vector ret = (p - center).norm();
-        return ret;
-    }
-};
-
-class Quadratic : public Primitive {
-public:
+    
+struct Ellipsoid {
+    bool transparent;
+    Color color;
     float A, B, C, D, E, F, G, H, I, J;
-public:
     bool intersect(const Line& l, Vector& result) {
         float Aq = A * l.u.x * l.u.x + B * l.u.y * l.u.y + C * l.u.z * l.u.z
                     + D * l.u.x * l.u.y + E * l.u.x * l.u.z + F * l.u.y * l.u.z;
@@ -269,9 +211,66 @@ public:
         ret.norm();
         return ret;
     }
+    Ellipsoid(const Vector& center, float a, float b, float c) {
+        A = b * b + c * c;
+        B = a * a + c * c;
+        C = a * a + b * b;
+        D = E = F = 0;
+        G = b * b * c * c * -2 * center.x;
+        H = a * a * c * c * -2 * center.y;
+        I = a * a * b * b * -2 * center.z;
+        J = b * b * c * c * center.x * center.x
+            +   a * a * c * c * center.y * center.y
+            +   a * a * b * b * center.z * center.z
+            -   a * a * b * b * c * c;
+    }
+    Ellipsoid(const Vector& center, float radius) {
+        A = B = C = 1;
+        D = E = F = 0;
+        G = - 2 * center.x;
+        H = - 2 * center.y;
+        I = - 2 * center.z;
+        J = dot(center, center) - radius * radius;
+    }
 };
 
-vector<Primitive*> objects; //=================================================================== global
+struct Poly {
+    bool transparent;
+    Color color;
+    vector<Vector> v;
+    Vector n;
+    bool intersect(const Line& l, Vector& result) {
+        float D = -dot(n, v[0]);
+        float s = -(D+dot(n, l.start)) / dot(n, l.u);
+        bool ret = POS(s);
+        result = l.start + l.u * s;
+        for (int i = 0; i < v.size(); i++)
+            if (ret)
+                ret = ret && dot(cross(v[i % v.size()] - result, v[(i+1) % v.size()] - result), n) > 0;
+        return ret;
+    }
+    Vector normal(const Vector& p) {
+        return n;
+    }
+    Poly(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& normal) {
+        v.push_back(v1);
+        v.push_back(v2);
+        v.push_back(v3);
+        n = normal;
+    }
+
+    Poly(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& v4, const Vector& normal) {
+        v.push_back(v1);
+        v.push_back(v2);
+        v.push_back(v3);
+        v.push_back(v4);
+        n = normal;
+    }
+};
+
+
+vector<Ellipsoid> ellipsoids; //=================================================================== global
+vector<Poly> polygons;
     
 vector<Color> pixelBuffer;
     
@@ -279,81 +278,49 @@ Vector from(0, -3, 0);
 Vector at(0, 0, 0);
 Vector up(0, 0, 1);
 Vector rv;
-float angDeg = 45;
+float angDeg = 45; //眼睛的视野宽度
 int resolution = WINDOW_SIZE;
-int depth = 5;
+int depth = 5; // maximum number of recursion level
 
-Polygon* newTriangle(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& normal) {
-    Polygon* ret = new Polygon();
-    ret->v.push_back(v1);
-    ret->v.push_back(v2);
-    ret->v.push_back(v3);
-    ret->n = normal;
-    return ret;
-}
-
-Polygon* newSquare(const Vector& v1, const Vector& v2, const Vector& v3, const Vector& v4, const Vector& normal) {
-    Polygon* ret = new Polygon();
-    ret->v.push_back(v1);
-    ret->v.push_back(v2);
-    ret->v.push_back(v3);
-    ret->v.push_back(v4);
-    ret->n = normal;
-    return ret;
-}
-
-Quadratic* newSphere(const Vector& center, float radius) {
-    Quadratic* ret = new Quadratic();
-    ret->A = ret->B = ret->C = 1;
-    ret->D = ret->E = ret->F = 0;
-    ret->G = - 2 * center.x;
-    ret->H = - 2 * center.y;
-    ret->I = - 2 * center.z;
-    ret->J = dot(center, center) - radius * radius;
-    return ret;
-}
-
-Quadratic* newEllipsoid(const Vector& center, float a, float b, float c) {
-    Quadratic* ret = new Quadratic();
-    ret->A = b * b + c * c;
-    ret->B = a * a + c * c;
-    ret->C = a * a + b * b;
-    ret->D = ret->E = ret->F = 0;
-    ret->G = b * b * c * c * -2 * center.x;
-    ret->H = a * a * c * c * -2 * center.y;
-    ret->I = a * a * b * b * -2 * center.z;
-    ret->J = b * b * c * c * center.x * center.x
-        +   a * a * c * c * center.y * center.y
-        +   a * a * b * b * center.z * center.z
-        -   a * a * b * b * c * c;
-    return ret;
-}
-
-Vector refract(const Line& l, const Vector& normal) {
+Line refract(const Vector& point, const Line& l, const Vector& normal) {
     float r = l.inside ? eta : 1 / eta;
     float cosThetaI = dot(-l.u, normal);
     float cosThetaR = sqrt(1 - (r * r) * (1 - cosThetaI * cosThetaI));
-    return l.u * r - normal * (cosThetaR - r * cosThetaI);
+    Vector refract = l.u * r - normal * (cosThetaR - r * cosThetaI);
+    return Line(point, refract.norm(), !l.inside);
 }
-
-Vector reflect(const Vector& u, const Vector& normal) {
-    return u - normal * 2 * dot(normal, u);
+Line reflect(const Vector& point, const Line& l, const Vector& normal) {
+    Vector reflect = l.u - normal * 2 * dot(normal, l.u);
+    return Line(point, reflect.norm(), l.inside);
 }
     
 bool intersect(const Line& line, Vector& result, int& resultId) {
     // result: shortest distance point
     // resultID: shortest distance point's object id
     Vector best, now;
-    int bestId;
+    int bestId = -1;
     float bestDist = 0, nowDist;
     bool ret = false;
-    for (int i = 0; i < objects.size(); i++) {
-        if (objects[i]->intersect(line, now)) {
+    /* check if ellipsoid */
+    for (int i = 0; i < ellipsoids.size(); i++) {
+        if (ellipsoids.at(i).intersect(line,now)) {
             nowDist = (now - line.start).length();
             if (!ret || (nowDist < bestDist)) {
                 ret = true;
                 best = now;
                 bestId = i;
+                bestDist = nowDist;
+            }
+        }
+    }
+    /* check if poly */
+    for (int i = 0; i < polygons.size(); i++) {
+        if (polygons.at(i).intersect(line, now)) {
+            nowDist = (now - line.start).length();
+            if (!ret || (nowDist < bestDist)) {
+                ret = true;
+                best = now;
+                bestId = i + (int)ellipsoids.size();
                 bestDist = nowDist;
             }
         }
@@ -371,7 +338,7 @@ Vector phong(const Vector& point, const Vector& ref, const Vector& normal) {
     Vector v = (ref - point).norm();
     Vector r = (normal * 2.0 * dot(normal, l) - l).norm();
     Vector diff;
-    Line line; line.start = point; line.u = (lightSource - point).norm();
+    Line line = Line(point, (lightSource - point).norm(), false);
     Vector result;
     int resultId;
     if (intersect(line, result, resultId))
@@ -420,29 +387,41 @@ Vector phong(const Vector& point, const Vector& ref, const Vector& normal) {
 
 Color light(const Line& line, int depth) {
     Color ret;
-    Primitive* prim;
     int id;
     Vector point;
-    Vector normal;
+//    Vector normal;
     if (depth == 0) return ret;
     if (intersect(line, point, id)) {
-        prim = objects[id];
-        normal = prim->normal(point);
-        Vector ph = phong(point, line.start, normal);
-        ret = prim->color * ph;
-        Line refl;
-        refl.start = point;
-        refl.u = reflect(line.u, normal).norm();
-        refl.inside = line.inside;
-        Color rf = light(refl, depth - 1);
-        ret += rf * kR;
-        if (prim->transparent) {
-            Line refr;
-            refr.start = point;
-            refr.u = refract(line, normal).norm();
-            refr.inside = !line.inside;
-            Color rt = light(refr, depth - 1);
-            ret += rt * kT;
+        /* if intersecting object is an ellipsoid */
+        if (id < ellipsoids.size()) {
+            Ellipsoid ellipsoid = ellipsoids.at(id);
+            Vector normal = ellipsoid.normal(point);
+            ret = ellipsoid.color * phong(point, line.start, normal);
+//            Line refl = Line(point, reflect(line.u, normal).norm(), line.inside);
+            Line refl = reflect(point, line, normal);
+            Color rf = light(refl, depth - 1);
+            ret += rf * kR;
+            if (ellipsoid.transparent) {
+//                Line refr = Line(point, refract(line, normal).norm(), !line.inside);
+                Line refr = refract(point, line, normal);
+                Color rt = light(refr, depth - 1);
+                ret += rt * kT;
+            }
+        /* if intersecting object is a polygon */
+        } else {
+            Poly poly = polygons.at(id - ellipsoids.size());
+            Vector normal = poly.normal(point);
+            ret = poly.color * phong(point, line.start, normal);
+//            Line refl = Line(point, reflect(line.u, normal).norm(), line.inside);
+            Line refl = reflect(point, line, normal);
+            Color rf = light(refl, depth - 1);
+            ret += rf * kR;
+            if (poly.transparent) {
+//                Line refr = Line(point, refract(line, normal).norm(), !line.inside);
+                Line refr = refract(point, line, normal);
+                Color rt = light(refr, depth - 1);
+                ret += rt * kT;
+            }
         }
     }
     return ret;
@@ -451,16 +430,17 @@ Color light(const Line& line, int depth) {
 //============================================================================== MAIN
 
 Line ray(int x, int y) {
-    Line ret;
-    ret.start = from;
+//    Line ret;
+//    ret.start = from;
     float xx = (float)x/(float)resolution*2 - 1;
     float yy = (float)y/(float)resolution*2 - 1;
     Vector p = from;
     p += rv * tan(angDeg / 180 * PI) * xx;
     p += up * tan(angDeg / 180 * PI) * yy;
     p += (at - from).norm();
-    ret.u = (p - from).norm();
-    return ret;
+//    ret.u = (p - from).norm();
+    
+    return Line(from, (p - from).norm(), false);
 }
 
 void updateVector() {
@@ -525,17 +505,17 @@ void refreshFunc() {
 }
 
 void get() {
-    cout << "from=" << from << endl;
-    cout << "at=" << at << endl;
-    cout << "up=" << up << endl;
-    cout << "angle=" << angDeg << endl;
-    cout << "I_a=" << iA << " I_l=" << iL << endl;
-    cout << "k_a=" << kA << " k_d=" << kD << " k_s=" << kS << endl;
-    cout << "K=" << bigK << " n=" << bigN << endl;
-    cout << "k_r=" << kR << " k_t=" << kT << endl;
-    cout << "eta=" << eta << endl;
-    cout << "depth=" << depth << endl;
-    cout << "resolution=" << resolution << endl;
+//    cout << "from=" << from << endl;
+//    cout << "at=" << at << endl;
+//    cout << "up=" << up << endl;
+//    cout << "angle=" << angDeg << endl;
+//    cout << "I_a=" << iA << " I_l=" << iL << endl;
+//    cout << "k_a=" << kA << " k_d=" << kD << " k_s=" << kS << endl;
+//    cout << "K=" << bigK << " n=" << bigN << endl;
+//    cout << "k_r=" << kR << " k_t=" << kT << endl;
+//    cout << "eta=" << eta << endl;
+//    cout << "depth=" << depth << endl;
+//    cout << "resolution=" << resolution << endl;
 }
 
 void set(const string& command) {
@@ -589,70 +569,36 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(600, 600);
 
-    Quadratic* org = newSphere(Vector(0, 0, 0), 0.1);
-    org->color = Color(1, 1, 1);
-    org->transparent = true;
-    Quadratic* s = newSphere(Vector(-0.5, 1, -0.5), 0.4);
-    s->color = Color(1, 1, 1);
-    s->transparent = false;
-    Quadratic* s2 = newSphere(Vector(1, 1.5, 1), 0.6);
-    s2->color = Color(1, 1, 1);
-    s2->transparent = true;
-    Polygon* t = newTriangle(Vector(-1, 2, 2),
-                             Vector(-1, 2, 1),
-                             Vector(-1, 1, 2),
-                             Vector(-1, 0, 0));
-    t->color = Color(1, 1, 1);
-    t->transparent = true;
-    Polygon* t2 = newTriangle(Vector(0, 2, 2),
-                              Vector(-1, 2, 1),
-                              Vector(-1, 2, 2),
-                              Vector(0, 1, 0));
-    t2->color = Color(1, 1, 1);
-    t2->transparent = true;
-    Polygon* t3 = newTriangle(Vector(-1, 2, 2),
-                              Vector(-1, 1, 2),
-                              Vector(0, 2, 2),
-                              Vector(0, 0, 1));
-    t3->color = Color(1, 1, 1);
-    t3->transparent = true;
-    Polygon* t4 = newTriangle(Vector(0, 2, 2),
-                              Vector(-1, 1, 2),
-                              Vector(-1, 2, 1),
-                              Vector(1, -1, -1));
-    t4->color = Color(1, 1, 1);
-    t4->transparent = true;
-    Polygon* p = newSquare(Vector(5, 6, -4), Vector(5, 6, 4),
-                           Vector(-5, 6, 4), Vector(-5, 6, -4),
-                           Vector(0, -1, 0));
-    p->color = Color(1, 0.85, 0.25);
-    p->transparent = false;
-    Polygon* p2 = newSquare(Vector(-5, -6, -4), Vector(-5, 6, -4),
-                           Vector(-5, 6, 4), Vector(-5, -6, 4),
-                           Vector(1, 0, 0));
-    p2->color = Color(0, 0.5, 1);
-    p2->transparent = false;
-    Polygon* p3 = newSquare(Vector(5, 6, -4), Vector(5, -6, -4),
-                           Vector(5, -6, 4), Vector(5, 6, 4),
-                           Vector(-1, 0, 0));
-    p3->color = Color(1, 0.2, 0);
-    p3->transparent = false;
-    Polygon* p4 = newSquare(Vector(5, 6, 4), Vector(5, -6, 4),
-                           Vector(-5, -6, 4), Vector(-5, 6, 4),
-                           Vector(0, 0, -1));
-    p4->color = Color(0.5, 1, 0);
-    p4->transparent = false;
-//    objects.push_back(org);
-    objects.push_back(s);
-    objects.push_back(s2);
-    objects.push_back(t);
-    objects.push_back(t2);
-    objects.push_back(t3);
-    objects.push_back(t4);
-//    objects.push_back(p);
-//    objects.push_back(p2);
-//    objects.push_back(p3);
-//    objects.push_back(p4);
+    Ellipsoid org = Ellipsoid(Vector(0, 0, 0), 0.1);
+    org.color = Color(1, 1, 1);
+    org.transparent = true;
+    ellipsoids.push_back(org);
+    Ellipsoid s = Ellipsoid(Vector(-0.5, 1, -0.5), 0.4);
+    s.color = Color(1, 1, 1);
+    s.transparent = false;
+    ellipsoids.push_back(s);
+    Ellipsoid s2 = Ellipsoid(Vector(1, 1.5, 1), 0.6);
+    s2.color = Color(1, 1, 1);
+    s2.transparent = true;
+    ellipsoids.push_back(s2);
+    
+    Poly t = Poly(Vector(-1, 2, 2),Vector(-1, 2, 1), Vector(-1, 1, 2), Vector(-1, 0, 0));
+    t.color = Color(1, 1, 1);
+    t.transparent = true;
+    polygons.push_back(t);
+    Poly t2 = Poly(Vector(0, 2, 2),Vector(-1, 2, 1), Vector(-1, 2, 2), Vector(0, 1, 0));
+    t2.color = Color(1, 1, 1);
+    t2.transparent = true;
+    polygons.push_back(t2);
+    Poly t3 = Poly(Vector(-1, 2, 2),Vector(-1, 1, 2), Vector(0, 2, 2), Vector(0, 0, 1));
+    t3.color = Color(1, 1, 1);
+    t3.transparent = true;
+    polygons.push_back(t3);
+    Poly t4 = Poly(Vector(0, 2, 2),Vector(-1, 1, 2), Vector(-1, 2, 1), Vector(1, -1, -1));
+    t4.color = Color(1, 1, 1);
+    t4.transparent = true;
+    polygons.push_back(t4);
+    
     updateVector();
     glutCreateWindow("OpenGL Project 5");
     initWindow();
@@ -670,3 +616,5 @@ int main(int argc, char** argv) {
     glutMainLoop();
     return 0;
 }
+
+
