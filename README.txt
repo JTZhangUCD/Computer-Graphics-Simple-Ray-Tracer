@@ -3,7 +3,7 @@ ucdzhang@ucdavis.edu
 
 To compile, type the following in the file directory:
 make
-./Project4
+./Project5
 
 When finish using the project, remove .o files by:
 make clean
