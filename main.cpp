@@ -535,7 +535,7 @@ Color processRay(const Ray& ray, int recurlvl) {
             }
         }
         return result;
-    } else { // hits bounding box
+    } else { // hits bounding box if the ray does not intersect any object.
         // return black color
         return result;
     }
@@ -557,12 +557,16 @@ void initObjects() {
     polygons.push_back(t4);
 
     /* create a ellipsoid */
-    Ellipsoid e1 = Ellipsoid(Point(-0.5,1,-0.5), 0.5, Color(1,0.5,1), false);
+    Ellipsoid e1 = Ellipsoid(Point(-0.5,1,-0.5), 0.6, Color(1,0.5,1), false);
     ellipsoids.push_back(e1);
     
     /* create a ellipsoid */
-    Ellipsoid e2 = Ellipsoid(Point(1,0.5,0), 0.5, Color(0.5,1,1), true);
+    Ellipsoid e2 = Ellipsoid(Point(1,0.5,0.5), 0.4, Color(0.5,1,1), true);
     ellipsoids.push_back(e2);
+    
+    /* create a ellipsoid */
+    Ellipsoid e3 = Ellipsoid(Point(1,0.5,-0.5), 0.3, Color(0.5,1,0.5), true);
+    ellipsoids.push_back(e3);
     
     /* create a plane */
     vector<Point> vertices5 {Point(-2,-6,-4), Point(-2,6,-4), Point(-2,6,4), Point(-2,-6,4)};
@@ -976,3 +980,4 @@ void check()
         exit(1);
     }
 }
+
