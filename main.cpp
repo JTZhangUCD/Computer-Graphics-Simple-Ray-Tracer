@@ -44,8 +44,7 @@ int win_height;
 int win_width;
 
 /* refraction coefficient */
-//float refrCoef = 0.667;
-float refrCoef = 1.5;
+float refrCoef = 0.667;
 /* maximum bumber of recursion levels */
 int recursionLevel = 3;
 
@@ -216,32 +215,28 @@ Vector hori = Vector(1.0,0.0,0.0);
 float fov = 45;
 
 struct Ray {
-    Point from;        // starting location
-    Vector dir;         // unit direction vector
-    bool inObj;         // if line is in an object or not
-    Ray(const Point& from1, const Vector& dir1, bool inObj1) {
-        from = from1;
-        dir = dir1;
-        inObj = inObj1;
+    Point p0;        // starting location
+    Vector u;         // unit direction vector
+    bool inObject;         // if line is in an object or not
+    Ray(const Point& p01, const Vector& u1, bool inObject1) {
+        p0 = p01;
+        u = u1;
+        inObject = inObject1;
     }
     Ray reflectRay(const Point& intersect, const Vector& N)const {
-        Vector u = dir;
         Vector reflectVector = u - N * 2 * (u * N);
-        return Ray(intersect, reflectVector.norm(), inObj);
+        return Ray(intersect, reflectVector.norm(), inObject);
     }
     Ray refractRay(const Point& intersect, const Vector& N)const {
-        Vector u = dir;
-        
-//        float coef = refrCoef;
-//        if (inObj == true) {
-//            coef = 1 / coef;
-//        }
-        float coef = inObj ? refrCoef : 1 / refrCoef;
+        float coef = refrCoef;
+        if (inObject == true) {
+            coef = 1 / coef;
+        }
         
         float cosi = -N * u;
         float cosr = pow(1 - pow(coef,2) * (1 - pow(cosi,2)),0.5);
         Vector refractVector = u * coef - N * (cosr - coef * cosi);
-        return Ray(intersect, refractVector.norm(), !inObj);
+        return Ray(intersect, refractVector.norm(), !inObject);
     }
 };
 
@@ -266,7 +261,7 @@ struct Polygon {
         }
         
         /* calculate normal vector */
-//        getNormal();
+        //getNormal();
         normal = normal1;
         
         /* assign color and is Trans */
@@ -290,32 +285,16 @@ struct Polygon {
         normal = Vector(nx,ny,nz);
     }
     
-    bool intersect(const Ray& ray, Point& intersectPoint) {
-        float D = -(normal * vertices.at(0).toVec());
-        Vector P0 = ray.from.toVec();
-        Vector u = ray.dir;
-        /* distance between ray start point and intersect */
-        float s = -(D + normal * P0) / (normal * u);
-        /* if the ray is heading to the polygon's direction. */
-        if (s >= 1e-4) {
-            /* intersect between the plane of the polygon and the ray */
-            Vector temp = P0 + u * s;
-            Point P = toPnt(temp);
-            for (int i = 0; i < (vertices.size()-1); i++) {
-                /* get local cross product */
-                Vector local = cross(vertices.at(i) - P, vertices.at(i+1) - P);
-                if (local * normal <= 0) {
-                    return false;
-                }
-            }
-            if (cross(vertices.at((int)vertices.size()-1) - P, vertices.at(0) - P) * normal <= 0) {
-                return false;
-            }
-            intersectPoint = P;
-            return true;
-        } else {
-            return false;
-        }
+    bool intersect(const Ray& ray, Point& intersect) {
+        double negD = normal * vertices.at(0).toVec();
+        double s = (negD - (normal * ray.p0.toVec())) / (normal * ray.u);
+        bool ret = s >= 1e-4;
+        Vector intersectVec = ray.p0.toVec() + ray.u * s;
+        intersect = toPnt(intersectVec);
+        for (int i = 0; i < vertices.size(); i++)
+            if (ret)
+                ret = ret && (cross(vertices[i % vertices.size()] - intersect, vertices[(i+1) % vertices.size()] - intersect) * normal) > 0;
+        return ret;
     }
 };
 
@@ -338,21 +317,21 @@ struct Sphere {
         return (p - center).norm();
     }
     bool intersect(const Ray& ray, Point& intersect) {
-        Vector deltaP = center - ray.from;
-        float udeltaP = ray.dir * deltaP;
+        Vector deltaP = center - ray.p0;
+        float udeltaP = ray.u * deltaP;
         float sqrt1 = pow(udeltaP,2) - pow(deltaP.length(),2) + pow(radius,2);
         if (sqrt1 < 0) {
             return false;
         }
         sqrt1 = sqrt(sqrt1);
 
-        Vector p1 = ray.from.toVec() + ray.dir * (udeltaP - sqrt1);
-        Vector p2 = ray.from.toVec() + ray.dir * (udeltaP + sqrt1);
+        Vector p1 = ray.p0.toVec() + ray.u * (udeltaP - sqrt1);
+        Vector p2 = ray.p0.toVec() + ray.u * (udeltaP + sqrt1);
 
-        bool v1 = ((p1 - ray.from.toVec()).length() >= 1e-4) && (udeltaP - sqrt1 >= 1e-4);
-        bool v2 = ((p2 - ray.from.toVec()).length() >= 1e-4) && (udeltaP + sqrt1 >= 1e-4);
+        bool v1 = ((p1 - ray.p0.toVec()).length() >= 1e-4) && (udeltaP - sqrt1 >= 1e-4);
+        bool v2 = ((p2 - ray.p0.toVec()).length() >= 1e-4) && (udeltaP + sqrt1 >= 1e-4);
         if (v1 && v2) {
-            intersect = (p1 - ray.from.toVec()).length() < (p2 - ray.from.toVec()).length() ? toPnt(p1) : toPnt(p2);
+            intersect = (p1 - ray.p0.toVec()).length() < (p2 - ray.p0.toVec()).length() ? toPnt(p1) : toPnt(p2);
             return true;
         } else if (v1) {
             intersect = toPnt(p1);
@@ -369,180 +348,51 @@ struct Sphere {
 /* related globals */
 vector<Sphere> spheres;
 
-/*--------------------------------- Ellipsoid --------------------------------*/
-struct Ellipsoid {
-    float A, B, C, D, E, F, G, H, I, J;
-    Color color;
-    bool isTrans;
-    Ellipsoid(const Point& center, float radius, const Color& color1, bool isTrans1) {
-        A = B = C = 1;
-        D = E = F = 0;
-        G = - 2 * center.x;
-        H = - 2 * center.y;
-        I = - 2 * center.z;
-        J = center * center - radius * radius;
-        
-        color = color1;
-        isTrans = isTrans1;
-    }
-    Ellipsoid(const Point& center, float a, float b, float c, const Color& color1, bool isTrans1) {
-        A = b * b + c * c;
-        B = a * a + c * c;
-        C = a * a + b * b;
-        D = E = F = 0;
-        G = b * b * c * c * -2 * center.x;
-        H = a * a * c * c * -2 * center.y;
-        I = a * a * b * b * -2 * center.z;
-        J = b * b * c * c * center.x * center.x
-            + a * a * c * c * center.y * center.y
-            + a * a * b * b * center.z * center.z
-            - a * a * b * b * c * c;
-        
-        color = color1;
-        isTrans = isTrans1;
-    }
-    Vector getNormal(const Point& p) {
-        Vector ret;
-        ret.x = 2*A*p.x + D*p.y + E*p.z + G;
-        ret.y = 2*B*p.y + D*p.x + F*p.z + H;
-        ret.z = 2*C*p.z + E*p.x + F*p.y + I;
-        ret.norm();
-        return ret;
-    }
-    bool intersect(const Ray& ray, Point& intersect) {
-        float Aq = A * ray.dir.x * ray.dir.x + B * ray.dir.y * ray.dir.y + C * ray.dir.z * ray.dir.z
-                    + D * ray.dir.x * ray.dir.y + E * ray.dir.x * ray.dir.z + F * ray.dir.y * ray.dir.z;
-        float Bq = 2*A * ray.from.x * ray.dir.x + 2*B * ray.from.y * ray.dir.y + 2*C * ray.from.z * ray.dir.z
-                    + D * (ray.from.x * ray.dir.y + ray.from.y * ray.dir.x)
-                    + E * (ray.from.x * ray.dir.z + ray.from.z * ray.dir.x)
-                    + F * (ray.from.y * ray.dir.z + ray.from.z * ray.dir.y)
-                    + G * ray.dir.x + H * ray.dir.y + I * ray.dir.z;
-        float Cq = A * ray.from.x * ray.from.x + B * ray.from.y * ray.from.y + C * ray.from.z * ray.from.z
-                    + D * ray.from.x * ray.from.y + E * ray.from.x * ray.from.z + F * ray.from.y * ray.from.z
-                    + G * ray.from.x + H * ray.from.y + I * ray.from.z + J;
-        float delta = Bq * Bq - 4 * Aq * Cq;
-        if (delta < 0) {
-            return false;
-        }
-        delta = sqrt(delta);
-        Vector p1, p2;
-        if (Aq == 0) {
-            p1 = p2 = ray.from.toVec() + ray.dir * (-Cq / Bq);
-        }
-        else {
-            p1 = ray.from.toVec() + ray.dir * (- Bq - delta) / 2 / Aq;
-            p2 = ray.from.toVec() + ray.dir * (- Bq + delta) / 2 / Aq;
-        }
-        bool v1 = ((p1 - ray.from.toVec()).length() >= 1e-4) && (- Bq - delta >= 1e-4);
-        bool v2 = ((p2 - ray.from.toVec()).length() >= 1e-4) && (- Bq + delta >= 1e-4);
-        if (v1 && v2)
-            intersect = (p1 - ray.from.toVec()).length() < (p2 - ray.from.toVec()).length() ? toPnt(p1) : toPnt(p2);
-        else if (v1)
-            intersect = toPnt(p1);
-        else if (v2)
-            intersect = toPnt(p2);
-        else return false;
-        return true;
-    }
-};
-
-/* related globals */
-vector<Ellipsoid> ellipsoids;
-
 bool intersectObject(const Ray& ray, Point& intersectPoint, int& id) {
-//    Point resultPoint;
-//    int resultID = -1;
-//    float resultDist = 0;
+    Point resultPoint;
+    int resultID = -1;
+    float resultDist = 0;
     
     /* check if intersect with a polygon */
-//    for (int i = 0; i < (int)polygons.size(); i++) {
-//        Point curPoint;
-//        if (polygons.at(i).intersect(ray, curPoint)) {
-//            float curDist = (curPoint - ray.from).length();
-//            if (resultID == -1) {
-//                resultDist = curDist;
-//                resultID = i;
-//                resultPoint = curPoint;
-//            } else if (resultID != -1 && resultDist > curDist) {
-//                resultDist = curDist;
-//                resultID = i;
-//                resultPoint = curPoint;
-//            }
-//        }
-//    }
+    for (int i = 0; i < (int)polygons.size(); i++) {
+        Point curPoint;
+        if (polygons.at(i).intersect(ray, curPoint)) {
+            float curDist = (curPoint - ray.p0).length();
+            if (resultID == -1) {
+                resultDist = curDist;
+                resultID = i;
+                resultPoint = curPoint;
+            } else if (resultID != -1 && resultDist > curDist) {
+                resultDist = curDist;
+                resultID = i;
+                resultPoint = curPoint;
+            }
+        }
+    }
     
     /* check if intersect with a sphere */
-//    for (int i = 0; i < (int)spheres.size(); i++) {
-//        Point curPoint;
-//        if (spheres.at(i).intersect(ray, curPoint)) {
-//            float curDist = (curPoint - ray.from).length();
-//            if (resultID == -1) {
-//                resultDist = curDist;
-//                resultID = i + (int)polygons.size();
-//                resultPoint = curPoint;
-//            } else if (resultID != -1 && resultDist > curDist) {
-//                resultDist = curDist;
-//                resultID = i + (int)polygons.size();
-//                resultPoint = curPoint;
-//            }
-//        }
-//    }
-    
-    /* check if intersect with an ellipsoid */
-//    for (int i = 0; i < (int)ellipsoids.size(); i++) {
-//        Point curPoint;
-//        if (ellipsoids.at(i).intersect(ray, curPoint)) {
-//            float curDist = (curPoint - ray.from).length();
-//            if (resultID == -1) {
-//                resultDist = curDist;
-//                resultID = i + (int)polygons.size();
-//                resultPoint = curPoint;
-//            } else if (resultID != -1 && resultDist > curDist) {
-//                resultDist = curDist;
-//                resultID = i + (int)polygons.size();
-//                resultPoint = curPoint;
-//            }
-//        }
-//    }
+    for (int i = 0; i < (int)spheres.size(); i++) {
+        Point curPoint;
+        if (spheres.at(i).intersect(ray, curPoint)) {
+            float curDist = (curPoint - ray.p0).length();
+            if (resultID == -1) {
+                resultDist = curDist;
+                resultID = i + (int)polygons.size();
+                resultPoint = curPoint;
+            } else if (resultID != -1 && resultDist > curDist) {
+                resultDist = curDist;
+                resultID = i + (int)polygons.size();
+                resultPoint = curPoint;
+            }
+        }
+    }
 
-//    if (resultID != -1) {
-//        id = resultID;
-//        intersectPoint = resultPoint;
-//        return true;
-//    }
-    Point best, now;
-    int bestId = -1;
-    float bestDist = 0, nowDist;
-    bool ret = false;
-    
-    for (int i = 0; i < polygons.size(); i++) {
-        if (polygons.at(i).intersect(ray, now)) {
-            nowDist = (now - ray.from).length();
-            if (!ret || (nowDist < bestDist)) {
-                ret = true;
-                best = now;
-                bestId = i;
-                bestDist = nowDist;
-            }
-        }
+    if (resultID != -1) {
+        id = resultID;
+        intersectPoint = resultPoint;
+        return true;
     }
-    
-    for (int i = 0; i < ellipsoids.size(); i++) {
-        if (ellipsoids.at(i).intersect(ray, now)) {
-            nowDist = (now - ray.from).length();
-            if (!ret || (nowDist < bestDist)) {
-                ret = true;
-                best = now;
-                bestId = i + (int)polygons.size();
-                bestDist = nowDist;
-            }
-        }
-    }
-    if (ret) {
-        intersectPoint = best;
-        id = bestId;
-    }
-    return ret;
+    return false;
 }
 
 Color phong(const Point& point, const Point& f, const Vector& normal) {
@@ -588,44 +438,27 @@ Color light(const Ray& ray, int recurlvl) {
         if (id < polygons.size()) {
             Polygon polygon = polygons.at(id);
             Vector normal = polygon.normal;
-            result = polygon.color * phong(intersect, ray.from, normal);
+            result = polygon.color * phong(intersect, ray.p0, normal);
             Ray refl = ray.reflectRay(intersect, normal);
             Color IR = light(refl, recurlvl-1);
-//            result += IR * kr;
-            result += IR * 0.5;
+            result += IR * kr;
             if (polygon.isTrans) {
                 Ray refr = ray.refractRay(intersect, normal);
                 Color IT = light(refr, recurlvl-1);
-//                result += IT * kt;
-                result += IT * 0.5;
+                result += IT * kt;
             }
         /* if intersecting object is a sphere */
-//        } else {
-//            Sphere sphere = spheres.at(id - polygons.size());
-//            Vector normal = sphere.getNormal(intersect);
-//            result = sphere.color * phong(intersect, ray.from, normal);
-//            Ray refl = ray.reflectRay(intersect, normal);
-//            Color IR = light(refl, recurlvl-1);
-//            result += IR * kr;
-//            if (sphere.isTrans) {
-//                Ray refr = ray.refractRay(intersect, normal);
-//                Color IT = light(refr, recurlvl-1);
-//                result += IT * kt;
-//            }
-        /* if intersecting object is an ellipsoid */
         } else {
-            Ellipsoid ellipsoid = ellipsoids.at(id - polygons.size());
-            Vector normal = ellipsoid.getNormal(intersect);
-            result = ellipsoid.color * phong(intersect, ray.from, normal);
+            Sphere sphere = spheres.at(id - polygons.size());
+            Vector normal = sphere.getNormal(intersect);
+            result = sphere.color * phong(intersect, ray.p0, normal);
             Ray refl = ray.reflectRay(intersect, normal);
             Color IR = light(refl, recurlvl-1);
-//            result += IR * kr;
-            result += IR * 0.5;
-            if (ellipsoid.isTrans) {
+            result += IR * kr;
+            if (sphere.isTrans) {
                 Ray refr = ray.refractRay(intersect, normal);
                 Color IT = light(refr, recurlvl-1);
-//                result += IT * kt;
-                result += IT * 0.5;
+                result += IT * kt;
             }
         }
     }
@@ -639,46 +472,34 @@ void updateVector() {
 
 void addObject() {
     vector<Point> vertices1 {Point(-1,2,2), Point(-1,2,1), Point(-1,1,2)};
-//    vector<Point> vertices1 {Point(-1,0.5,0.5), Point(-1,0.5,-0.5), Point(-1,-0.5,0.5)};
     Polygon t1 = Polygon(vertices1, Vector(-1,0,0), Color(1,1,1), true);
     polygons.push_back(t1);
     
     vector<Point> vertices2 {Point(0,2,2), Point(-1,2,1), Point(-1,2,2)};
-//    vector<Point> vertices2 {Point(0,0.5,0.5), Point(-1,0.5,-0.5), Point(-1,0.5,0.5)};
     Polygon t2 = Polygon(vertices2, Vector(0,1,0), Color(1,1,1), true);
     polygons.push_back(t2);
     
     vector<Point> vertices3 {Point(-1,2,2), Point(-1,1,2), Point(0,2,2)};
-//    vector<Point> vertices3 {Point(-1,0.5,0.5), Point(-1,-0.5,0.5), Point(0,0.5,0.5)};
     Polygon t3 = Polygon(vertices3, Vector(0,0,1), Color(1,1,1), true);
     polygons.push_back(t3);
     
     vector<Point> vertices4 {Point(0,2,2), Point(-1,1,2), Point(-1,2,1)};
-//    vector<Point> vertices4 {Point(0,0.5,0.5), Point(-1,-0.5,0.5), Point(-1,0.5,-0.5)};
     Polygon t4 = Polygon(vertices4, Vector(1,-1,-1), Color(1,1,1), true);
     polygons.push_back(t4);
+
+    Sphere s2 = Sphere(Point(-0.5,1,-0.5), 0.4, Color(1,1,1), false);
+    spheres.push_back(s2);
+    Sphere s3 = Sphere(Point(1,1.5,1), 0.6, Color(1,1,1), true);
+    spheres.push_back(s3);
     
-//    Sphere s1 = Sphere(Point(0,0,0), 0.1, Color(1,1,1), true);
-//    spheres.push_back(s1);
-//    Sphere s2 = Sphere(Point(-0.5,1,-0.5), 0.4, Color(1,1,1), false);
-//    spheres.push_back(s2);
-//    Sphere s3 = Sphere(Point(1,1.5,1), 0.6, Color(1,1,1), true);
-//    spheres.push_back(s3);
-    
-    Ellipsoid s1 = Ellipsoid(Point(0,0,0), 0.1, Color(1,1,1), true);
-    ellipsoids.push_back(s1);
-    Ellipsoid s2 = Ellipsoid(Point(-0.5,1,-0.5), 0.4, Color(1,1,1), false);
-    ellipsoids.push_back(s2);
-    Ellipsoid s3 = Ellipsoid(Point(1,1.5,1), 0.6, Color(1,1,1), true);
-    ellipsoids.push_back(s3);
-    
-    updateVector();
+//    updateVector();
 }
 
 void init();
 void idle();
 void display();
 void draw_pix(int x, int y);
+void reshape(int width, int height);
 void key(unsigned char ch, int x, int y);
 void mouse(int button, int state, int x, int y);
 void motion(int x, int y);
@@ -686,7 +507,6 @@ void check();
 
 int main(int argc, char **argv)
 {
-    
     //the number of pixels in the grid
     grid_width = 500;
     grid_height = 500;
@@ -711,14 +531,15 @@ int main(int argc, char **argv)
     //windown title is "glut demo"
     glutCreateWindow("glut demo");
     
-    glClearColor(0,0,0,0);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0,win_height,0,win_width);
-    glClear(GL_COLOR_BUFFER_BIT);
+//    glClearColor(0,0,0,0);
+//    glMatrixMode(GL_PROJECTION);
+//    glLoadIdentity();
+//    gluOrtho2D(0,win_height,0,win_width);
+//    glClear(GL_COLOR_BUFFER_BIT);
     
     /*defined glut callback functions*/
     glutDisplayFunc(display); //rendering calls here
+    glutReshapeFunc(reshape); //update GL on window size change
     glutMouseFunc(mouse);     //mouse button events
     glutMotionFunc(motion);   //mouse movement events
     glutKeyboardFunc(key);    //Keyboard events
@@ -808,6 +629,36 @@ void draw_pix(int x, int y){
     glEnd();
 }
 
+/*Gets called when display size changes, including initial craetion of the display*/
+void reshape(int width, int height)
+{
+    /*set up projection matrix to define the view port*/
+    //update the ne window width and height
+    win_width = width;
+    win_height = height;
+    
+    //creates a rendering area across the window
+    glViewport(0,0,width,height);
+    // up an orthogonal projection matrix so that
+    // the pixel space is mapped to the grid space
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0,grid_width,0,grid_height,-10,10);
+    
+    //clear the modelview matrix
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    
+    //set pixel size based on width, if the aspect ratio
+    //changes this hack won't work as well
+    pixel_size = width/(double)grid_width;
+    
+    //set pixel size relative to the grid cell size
+    glPointSize(pixel_size);
+    //check for opengl errors
+    check();
+}
+
 //gets called when a key is pressed on the keyboard
 void key(unsigned char ch, int x, int y)
 {
@@ -866,3 +717,4 @@ void check()
         exit(1);
     }
 }
+
